@@ -1,12 +1,9 @@
 const mongoose = require('mongoose');
 const Schema = mongoose.Schema;
 
-// MealMate Schema
+
+    
 const tiffinSchema = new Schema({
-    id: {
-        type: String,
-        required: false,
-      },
   name: {
     type: String,
     required: true,
