@@ -1,4 +1,4 @@
-const mongoose = require('mongoose');
+const mongoose = require("mongoose");
 const Schema = mongoose.Schema;
 
 // Review Schema
@@ -16,7 +16,12 @@ const ReviewSchema = new Schema({
   },
   user: {
     type: Schema.Types.ObjectId,
-    ref: 'User', 
+    ref: "User",
+    required: true,
+  },
+  meal: {
+    type: Schema.Types.ObjectId,
+    ref: "Meal",
     required: true,
   },
   createdAt: {
@@ -25,4 +30,4 @@ const ReviewSchema = new Schema({
   },
 });
 
-module.exports = mongoose.model('Review', ReviewSchema);
+module.exports = mongoose.model("Review", ReviewSchema);
