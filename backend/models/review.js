@@ -7,7 +7,7 @@ const ReviewSchema = new Schema({
     type: Number,
     required: true,
     min: 1,
-    max: 5, // Assuming a rating scale of 1 to 5
+    max: 5,
   },
   text: {
     type: String,
@@ -16,7 +16,7 @@ const ReviewSchema = new Schema({
   },
   user: {
     type: Schema.Types.ObjectId,
-    ref: 'User', // Reference to the User model
+    ref: 'User', 
     required: true,
   },
   createdAt: {
