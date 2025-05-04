@@ -3,10 +3,7 @@ const Schema = mongoose.Schema;
 
 // MealMate Schema
 const MealMateSchema = new Schema({
-    id: {
-        type: String,
-        required: false,
-      },
+    
   name: {
     type: String,
     required: true,
