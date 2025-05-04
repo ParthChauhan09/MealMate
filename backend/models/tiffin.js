@@ -2,7 +2,7 @@ const mongoose = require('mongoose');
 const Schema = mongoose.Schema;
 
 // MealMate Schema
-const MealMateSchema = new Schema({
+const tiffinSchema = new Schema({
     id: {
         type: String,
         required: false,
@@ -32,4 +32,4 @@ const MealMateSchema = new Schema({
   },
 });
 
-module.exports = mongoose.model('MealMate', MealMateSchema);
+module.exports = mongoose.model('Tiffin', tiffinSchema);
