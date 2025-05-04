@@ -24,6 +24,10 @@ const ReviewSchema = new Schema({
     ref: "Meal",
     required: true,
   },
+  photos: {
+    type: [String],
+    default: [],
+  },
   createdAt: {
     type: Date,
     default: Date.now,

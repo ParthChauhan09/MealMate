@@ -5,7 +5,6 @@ const asyncHandler = require("../middleware/async");
 // @desc    Get all users
 // @route   GET /api/users
 // @access  Private/Admin
-
 exports.getAllUsers = asyncHandler(async (req, res, next) => {
   const users = await User.find();
 
@@ -62,6 +61,36 @@ exports.updateUser = asyncHandler(async (req, res, next) => {
     new: true,
     runValidators: true,
   });
+
+  if (!user) {
+    return next(
+      new ErrorResponse(`User not found with id of ${req.params.id}`, 404)
+    );
+  }
+
+  res.status(200).json({
+    success: true,
+    data: user,
+  });
+});
+
+// @desc    Update user profile photo
+// @route   PUT /api/users/:id/profile-photo
+// @access  Private
+exports.updateProfilePhoto = asyncHandler(async (req, res, next) => {
+  // Check if a file was uploaded
+  if (!req.body.profilePhoto) {
+    return next(new ErrorResponse("Please upload a file", 400));
+  }
+
+  const user = await User.findByIdAndUpdate(
+    req.params.id,
+    { profilePhoto: req.body.profilePhoto },
+    {
+      new: true,
+      runValidators: true,
+    }
+  );
 
   if (!user) {
     return next(

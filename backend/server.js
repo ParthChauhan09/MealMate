@@ -1,8 +1,8 @@
-const express = require('express');
-const dotenv = require('dotenv');
-const cors = require('cors');
-const connectDB = require('./config/db');
-const errorHandler = require('./middleware/errorHandler');
+const express = require("express");
+const dotenv = require("dotenv");
+const cors = require("cors");
+const connectDB = require("./config/db");
+const errorHandler = require("./middleware/errorHandler");
 
 // Load environment variables
 dotenv.config();
@@ -17,18 +17,21 @@ const app = express();
 app.use(express.json());
 app.use(cors());
 
+// Set static folder for serving files locally (if needed)
+app.use(express.static("public"));
+
 // Define routes
-app.use('/api/auth', require('./routes/authRoutes'));
-app.use('/api/users', require('./routes/userRoutes'));
-app.use('/api/meals', require('./routes/mealRoutes'));
-app.use('/api/orders', require('./routes/orderRoutes'));
-app.use('/api/reviews', require('./routes/reviewRoutes'));
+app.use("/api/auth", require("./routes/authRoutes"));
+app.use("/api/users", require("./routes/userRoutes"));
+app.use("/api/meals", require("./routes/mealRoutes"));
+app.use("/api/orders", require("./routes/orderRoutes"));
+app.use("/api/reviews", require("./routes/reviewRoutes"));
 
 // Home route
-app.get('/', (req, res) => {
+app.get("/", (req, res) => {
   res.json({
-    message: 'Welcome to MealMate API',
-    version: '1.0.0'
+    message: "Welcome to MealMate API",
+    version: "1.0.0",
   });
 });
 
@@ -44,7 +47,7 @@ const server = app.listen(PORT, () => {
 });
 
 // Handle unhandled promise rejections
-process.on('unhandledRejection', (err, promise) => {
+process.on("unhandledRejection", (err, promise) => {
   console.log(`Error: ${err.message}`);
   // Close server & exit process
   server.close(() => process.exit(1));
