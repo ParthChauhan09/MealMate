@@ -30,6 +30,11 @@ const tiffinSchema = new Schema({
     type: Boolean,
     default: true,
   },
+  provider:{
+    type: mongoose.Schema.ObjectId,
+    ref: "User",
+    required: true,
+  }
 });
 
 module.exports = mongoose.model("Meal", tiffinSchema);
