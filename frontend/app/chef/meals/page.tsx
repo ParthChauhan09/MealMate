@@ -441,14 +441,12 @@ export default function ChefMealsPage() {
                   animate={{ opacity: 1, y: 0 }}
                   transition={{ delay: index * 0.1 }}
                 >
-                  <Card className="overflow-hidden">
+                  <Card className="overflow-hidden h-full flex flex-col">
                     <div className="relative">
-                      <img
-                        src="/placeholder.svg?height=200&width=300"
-                        alt={meal.name}
-                        className="w-full h-48 object-cover"
-                      />
-                      <Badge 
+                      <div className="w-full h-48 bg-gradient-to-br from-orange-100 to-orange-200 flex items-center justify-center">
+                        <div className="text-6xl">🍽️</div>
+                      </div>
+                      <Badge
                         className={`absolute top-4 right-4 ${
                           meal.availability ? "bg-green-500" : "bg-red-500"
                         } text-white`}
@@ -460,13 +458,13 @@ export default function ChefMealsPage() {
                       </Badge>
                     </div>
 
-                    <CardContent className="p-6">
+                    <CardContent className="p-6 flex-1 flex flex-col">
                       <div className="flex justify-between items-start mb-3">
-                        <h3 className="text-xl font-bold text-gray-900 line-clamp-1">{meal.name}</h3>
-                        <span className="text-xl font-bold text-orange-600">₹{meal.price}</span>
+                        <h3 className="text-xl font-bold text-gray-900 line-clamp-1 flex-1 mr-2">{meal.name}</h3>
+                        <span className="text-xl font-bold text-orange-600 whitespace-nowrap">₹{meal.price}</span>
                       </div>
 
-                      <p className="text-gray-600 mb-4 line-clamp-2">{meal.description}</p>
+                      <p className="text-gray-600 mb-4 line-clamp-2 flex-1">{meal.description}</p>
 
                       <div className="flex gap-2">
                         <Button

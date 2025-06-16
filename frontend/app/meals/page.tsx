@@ -7,6 +7,7 @@ import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Badge } from "@/components/ui/badge"
 import { useAuth } from "@/contexts/AuthContext"
+import { useCart } from "@/contexts/CartContext"
 import { useToast } from "@/hooks/use-toast"
 import { Search, Heart, ShoppingCart, SlidersHorizontal } from "lucide-react"
 
@@ -28,6 +29,7 @@ const categories = ["all", "breakfast", "lunch", "dinner", "snacks", "beverage"]
 
 export default function MealsPage() {
   const { token } = useAuth()
+  const { addToCart } = useCart()
   const { toast } = useToast()
   const [meals, setMeals] = useState<Meal[]>([])
   const [filteredMeals, setFilteredMeals] = useState<Meal[]>([])
@@ -36,7 +38,6 @@ export default function MealsPage() {
   const [selectedCategory, setSelectedCategory] = useState("all")
   const [priceRange, setPriceRange] = useState({ min: 0, max: 1000 })
   const [likedMeals, setLikedMeals] = useState<string[]>([])
-  const [cartItems, setCartItems] = useState<string[]>([])
 
   const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000/api"
 
@@ -89,11 +90,13 @@ export default function MealsPage() {
     setLikedMeals((prev) => (prev.includes(mealId) ? prev.filter((id) => id !== mealId) : [...prev, mealId]))
   }
 
-  const addToCart = (mealId: string) => {
-    setCartItems((prev) => [...prev, mealId])
-    toast({
-      title: "Added to cart",
-      description: "Meal has been added to your cart.",
+  const handleAddToCart = (meal: Meal) => {
+    addToCart({
+      _id: meal._id,
+      name: meal.name,
+      price: meal.price,
+      category: meal.category,
+      provider: meal.provider,
     })
   }
 
@@ -275,7 +278,7 @@ export default function MealsPage() {
                         <div className="flex gap-2">
                           <motion.div whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }} className="flex-1">
                             <Button
-                              onClick={() => addToCart(meal._id)}
+                              onClick={() => handleAddToCart(meal)}
                               variant="outline"
                               className="w-full"
                               size="sm"
@@ -325,23 +328,7 @@ export default function MealsPage() {
             </motion.div>
           )}
 
-          {/* Cart Notification */}
-          <AnimatePresence>
-            {cartItems.length > 0 && (
-              <motion.div
-                className="fixed bottom-6 right-6 bg-orange-500 text-white p-4 rounded-full shadow-lg z-50"
-                initial={{ scale: 0, opacity: 0 }}
-                animate={{ scale: 1, opacity: 1 }}
-                exit={{ scale: 0, opacity: 0 }}
-                whileHover={{ scale: 1.1 }}
-              >
-                <div className="flex items-center gap-2">
-                  <ShoppingCart className="w-5 h-5" />
-                  <span className="font-medium">{cartItems.length}</span>
-                </div>
-              </motion.div>
-            )}
-          </AnimatePresence>
+
         </motion.div>
       </div>
     </div>

@@ -24,7 +24,7 @@ import {
   User,
   Phone,
   Mail,
-  Star,
+
   AlertCircle,
   TrendingUp,
   Filter,
@@ -204,10 +204,6 @@ export default function OrdersPage() {
   }
 
   const cancelOrder = async (orderId: string) => {
-    if (!confirm("Are you sure you want to cancel this order?")) {
-      return
-    }
-
     setUpdatingOrders(prev => new Set(prev).add(orderId))
 
     try {
@@ -904,13 +900,7 @@ export default function OrdersPage() {
                         <p className="font-medium">{new Date(order.createdAt).toLocaleDateString()}</p>
                       </div>
                     </div>
-                    <div className="flex items-center gap-2">
-                      <Star className="w-4 h-4 text-gray-400" />
-                      <div>
-                        <p className="text-sm text-gray-600">Rating</p>
-                        <p className="font-medium">Not rated yet</p>
-                      </div>
-                    </div>
+
                   </div>
 
                   <Button
@@ -1164,16 +1154,6 @@ export default function OrdersPage() {
                   </div>
 
                   <div className="flex gap-2">
-                    {order.status === "delivered" && (
-                      <Button
-                        variant="outline"
-                        size="sm"
-                        className="text-yellow-600 border-yellow-600 hover:bg-yellow-50"
-                      >
-                        <Star className="w-4 h-4 mr-2" />
-                        Rate Order
-                      </Button>
-                    )}
                     <Button
                       variant="outline"
                       size="sm"

@@ -1,16 +1,14 @@
 "use client"
 
-import { useState } from "react"
+import { useState, useEffect } from "react"
 import { motion, AnimatePresence } from "framer-motion"
+import { useCart } from "@/contexts/CartContext"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
 import { Input } from "@/components/ui/input"
 import {
   Search,
-  Star,
-  Clock,
-  MapPin,
   ChefHat,
   Users,
   TrendingUp,
@@ -19,6 +17,19 @@ import {
   ArrowRight,
   Play,
 } from "lucide-react"
+
+interface Meal {
+  _id: string
+  name: string
+  description: string
+  price: number
+  category: string
+  availability: boolean
+  provider: {
+    _id: string
+    name: string
+  }
+}
 
 const containerVariants = {
   hidden: { opacity: 0 },
@@ -55,47 +66,7 @@ const floatingVariants = {
   },
 }
 
-const meals = [
-  {
-    id: 1,
-    name: "Homemade Biryani",
-    description: "Aromatic basmati rice with tender chicken and traditional spices",
-    price: 150,
-    rating: 4.8,
-    reviews: 124,
-    category: "lunch",
-    provider: "Priya's Kitchen",
-    image: "/placeholder.svg?height=200&width=300",
-    time: "45 min",
-    distance: "2.3 km",
-  },
-  {
-    id: 2,
-    name: "Gujarati Thali",
-    description: "Complete traditional meal with dal, sabzi, roti, and sweets",
-    price: 120,
-    rating: 4.9,
-    reviews: 89,
-    category: "lunch",
-    provider: "Mama's Rasoi",
-    image: "/placeholder.svg?height=200&width=300",
-    time: "30 min",
-    distance: "1.8 km",
-  },
-  {
-    id: 3,
-    name: "South Indian Breakfast",
-    description: "Crispy dosa with sambar, coconut chutney, and filter coffee",
-    price: 80,
-    rating: 4.7,
-    reviews: 156,
-    category: "breakfast",
-    provider: "Chennai Express",
-    image: "/placeholder.svg?height=200&width=300",
-    time: "25 min",
-    distance: "3.1 km",
-  },
-]
+
 
 const stats = [
   { icon: ChefHat, label: "Home Chefs", value: "500+", color: "text-orange-500" },
@@ -104,25 +75,56 @@ const stats = [
 ]
 
 export default function MealMatePage() {
+  const { addToCart } = useCart()
   const [searchQuery, setSearchQuery] = useState("")
   const [selectedCategory, setSelectedCategory] = useState("all")
-  const [likedMeals, setLikedMeals] = useState<number[]>([])
-  const [cartItems, setCartItems] = useState<number[]>([])
+  const [likedMeals, setLikedMeals] = useState<string[]>([])
+  const [meals, setMeals] = useState<Meal[]>([])
+  const [loading, setLoading] = useState(true)
+
+  const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000/api"
 
   const categories = ["all", "breakfast", "lunch", "dinner", "snacks"]
 
-  const toggleLike = (mealId: number) => {
+  useEffect(() => {
+    fetchFeaturedMeals()
+  }, [])
+
+  const fetchFeaturedMeals = async () => {
+    try {
+      const response = await fetch(`${API_BASE_URL}/meals`)
+      if (response.ok) {
+        const data = await response.json()
+        // Get first 6 available meals for featured section
+        const availableMeals = data.data.filter((meal: Meal) => meal.availability).slice(0, 6)
+        setMeals(availableMeals)
+      }
+    } catch (error) {
+      console.error("Failed to fetch meals:", error)
+    } finally {
+      setLoading(false)
+    }
+  }
+
+  const toggleLike = (mealId: string) => {
     setLikedMeals((prev) => (prev.includes(mealId) ? prev.filter((id) => id !== mealId) : [...prev, mealId]))
   }
 
-  const addToCart = (mealId: number) => {
-    setCartItems((prev) => [...prev, mealId])
+  const handleAddToCart = (meal: Meal) => {
+    addToCart({
+      _id: meal._id,
+      name: meal.name,
+      price: meal.price,
+      category: meal.category,
+      provider: meal.provider,
+    })
   }
 
   const filteredMeals = meals.filter((meal) => {
     const matchesSearch =
       meal.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      meal.description.toLowerCase().includes(searchQuery.toLowerCase())
+      meal.description.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      meal.provider.name.toLowerCase().includes(searchQuery.toLowerCase())
     const matchesCategory = selectedCategory === "all" || meal.category === selectedCategory
     return matchesSearch && matchesCategory
   })
@@ -168,7 +170,7 @@ export default function MealMatePage() {
               <Button
                 size="lg"
                 variant="outline"
-                className="border-white text-white hover:bg-white hover:text-orange-600 transform hover:scale-105 transition-all duration-200"
+                className="border-white text-orange-600 hover:bg-orange-50 hover:text-orange-600 transform hover:scale-105 transition-all duration-200"
               >
                 Become a Chef
                 <ArrowRight className="w-5 h-5 ml-2" />
@@ -298,79 +300,69 @@ export default function MealMatePage() {
               animate="visible"
               key={selectedCategory + searchQuery}
             >
-              {filteredMeals.map((meal, index) => (
-                <motion.div
-                  key={meal.id}
-                  variants={itemVariants}
-                  whileHover={{ y: -10, scale: 1.02 }}
-                  transition={{ type: "spring", stiffness: 300, damping: 20 }}
-                >
-                  <Card className="overflow-hidden shadow-lg hover:shadow-2xl transition-all duration-300 border-0 bg-white">
-                    <div className="relative">
-                      <img
-                        src={meal.image || "/placeholder.svg"}
-                        alt={meal.name}
-                        className="w-full h-48 object-cover"
-                      />
-                      <motion.button
-                        className="absolute top-4 right-4 p-2 rounded-full bg-white/90 backdrop-blur-sm shadow-lg"
-                        onClick={() => toggleLike(meal.id)}
-                        whileHover={{ scale: 1.1 }}
-                        whileTap={{ scale: 0.9 }}
-                      >
-                        <Heart
-                          className={`w-5 h-5 transition-colors duration-200 ${
-                            likedMeals.includes(meal.id) ? "text-red-500 fill-red-500" : "text-gray-600"
-                          }`}
-                        />
-                      </motion.button>
-                      <Badge className="absolute top-4 left-4 bg-orange-500 text-white">{meal.category}</Badge>
-                    </div>
-
-                    <CardContent className="p-6">
-                      <div className="flex justify-between items-start mb-3">
-                        <h3 className="text-xl font-bold text-gray-900 line-clamp-1">{meal.name}</h3>
-                        <span className="text-2xl font-bold text-orange-600">₹{meal.price}</span>
+              {loading ? (
+                <div className="col-span-full flex justify-center py-16">
+                  <div className="animate-spin rounded-full h-32 w-32 border-b-2 border-orange-500"></div>
+                </div>
+              ) : (
+                filteredMeals.map((meal, index) => (
+                  <motion.div
+                    key={meal._id}
+                    variants={itemVariants}
+                    whileHover={{ y: -10, scale: 1.02 }}
+                    transition={{ type: "spring", stiffness: 300, damping: 20 }}
+                  >
+                    <Card className="overflow-hidden shadow-lg hover:shadow-2xl transition-all duration-300 border-0 bg-white h-full flex flex-col">
+                      <div className="relative">
+                        <div className="w-full h-48 bg-gradient-to-br from-orange-100 to-orange-200 flex items-center justify-center">
+                          <div className="text-6xl">🍽️</div>
+                        </div>
+                        <motion.button
+                          className="absolute top-4 right-4 p-2 rounded-full bg-white/90 backdrop-blur-sm shadow-lg"
+                          onClick={() => toggleLike(meal._id)}
+                          whileHover={{ scale: 1.1 }}
+                          whileTap={{ scale: 0.9 }}
+                        >
+                          <Heart
+                            className={`w-5 h-5 transition-colors duration-200 ${
+                              likedMeals.includes(meal._id) ? "text-red-500 fill-red-500" : "text-gray-600"
+                            }`}
+                          />
+                        </motion.button>
+                        <Badge className="absolute top-4 left-4 bg-orange-500 text-white capitalize">{meal.category}</Badge>
                       </div>
 
-                      <p className="text-gray-600 mb-4 line-clamp-2">{meal.description}</p>
+                      <CardContent className="p-6 flex-1 flex flex-col">
+                        <div className="flex justify-between items-start mb-3">
+                          <h3 className="text-xl font-bold text-gray-900 line-clamp-1 flex-1 mr-2">{meal.name}</h3>
+                          <span className="text-2xl font-bold text-orange-600 whitespace-nowrap">₹{meal.price}</span>
+                        </div>
 
-                      <div className="flex items-center gap-4 mb-4 text-sm text-gray-500">
-                        <div className="flex items-center gap-1">
-                          <Star className="w-4 h-4 text-yellow-500 fill-yellow-500" />
-                          <span className="font-medium">{meal.rating}</span>
-                          <span>({meal.reviews})</span>
-                        </div>
-                        <div className="flex items-center gap-1">
-                          <Clock className="w-4 h-4" />
-                          <span>{meal.time}</span>
-                        </div>
-                        <div className="flex items-center gap-1">
-                          <MapPin className="w-4 h-4" />
-                          <span>{meal.distance}</span>
-                        </div>
-                      </div>
+                        <p className="text-gray-600 mb-4 line-clamp-2 flex-1">{meal.description}</p>
 
-                      <div className="flex items-center justify-between">
-                        <span className="text-sm text-gray-600">by {meal.provider}</span>
-                        <motion.div whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}>
-                          <Button
-                            onClick={() => addToCart(meal.id)}
-                            className="bg-orange-500 hover:bg-orange-600 text-white rounded-full px-6"
-                          >
-                            <ShoppingCart className="w-4 h-4 mr-2" />
-                            Add to Cart
-                          </Button>
-                        </motion.div>
-                      </div>
-                    </CardContent>
-                  </Card>
-                </motion.div>
-              ))}
+                        <div className="mt-auto">
+                          <div className="flex items-center justify-between mb-4">
+                            <span className="text-sm text-gray-600">by {meal.provider.name}</span>
+                          </div>
+                          <motion.div whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}>
+                            <Button
+                              onClick={() => handleAddToCart(meal)}
+                              className="bg-orange-500 hover:bg-orange-600 text-white rounded-full px-6 w-full"
+                            >
+                              <ShoppingCart className="w-4 h-4 mr-2" />
+                              Add to Cart
+                            </Button>
+                          </motion.div>
+                        </div>
+                      </CardContent>
+                    </Card>
+                  </motion.div>
+                ))
+              )}
             </motion.div>
           </AnimatePresence>
 
-          {filteredMeals.length === 0 && (
+          {!loading && filteredMeals.length === 0 && (
             <motion.div
               className="text-center py-16"
               initial={{ opacity: 0, scale: 0.8 }}
@@ -414,23 +406,7 @@ export default function MealMatePage() {
         </div>
       </motion.section>
 
-      {/* Cart Notification */}
-      <AnimatePresence>
-        {cartItems.length > 0 && (
-          <motion.div
-            className="fixed bottom-6 right-6 bg-orange-500 text-white p-4 rounded-full shadow-lg z-50"
-            initial={{ scale: 0, opacity: 0 }}
-            animate={{ scale: 1, opacity: 1 }}
-            exit={{ scale: 0, opacity: 0 }}
-            whileHover={{ scale: 1.1 }}
-          >
-            <div className="flex items-center gap-2">
-              <ShoppingCart className="w-5 h-5" />
-              <span className="font-medium">{cartItems.length}</span>
-            </div>
-          </motion.div>
-        )}
-      </AnimatePresence>
+
     </div>
   )
 }

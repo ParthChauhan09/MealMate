@@ -93,7 +93,7 @@ export default function CustomerDashboard() {
         setStats({
           totalOrders,
           activeOrders,
-          favoriteChefs: 5, // This would come from a separate API
+          favoriteChefs: 0, // Feature not implemented yet
           totalSpent,
         })
       }
