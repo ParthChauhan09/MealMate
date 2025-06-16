@@ -8,7 +8,7 @@ import { Input } from "@/components/ui/input"
 import { Badge } from "@/components/ui/badge"
 import { useAuth } from "@/contexts/AuthContext"
 import { useToast } from "@/hooks/use-toast"
-import { Search, Star, Clock, MapPin, Heart, ShoppingCart, SlidersHorizontal } from "lucide-react"
+import { Search, Heart, ShoppingCart, SlidersHorizontal } from "lucide-react"
 
 interface Meal {
   _id: string
@@ -237,13 +237,11 @@ export default function MealsPage() {
                   transition={{ delay: index * 0.1 }}
                   whileHover={{ y: -5, scale: 1.02 }}
                 >
-                  <Card className="overflow-hidden shadow-lg hover:shadow-xl transition-all duration-300 border-0 bg-white">
+                  <Card className="overflow-hidden shadow-lg hover:shadow-xl transition-all duration-300 border-0 bg-white h-full flex flex-col">
                     <div className="relative">
-                      <img
-                        src={`/placeholder.svg?height=200&width=300`}
-                        alt={meal.name}
-                        className="w-full h-48 object-cover"
-                      />
+                      <div className="w-full h-48 bg-gradient-to-br from-orange-100 to-orange-200 flex items-center justify-center">
+                        <div className="text-6xl">🍽️</div>
+                      </div>
                       <motion.button
                         className="absolute top-4 right-4 p-2 rounded-full bg-white/90 backdrop-blur-sm shadow-lg"
                         onClick={() => toggleLike(meal._id)}
@@ -261,47 +259,35 @@ export default function MealsPage() {
                       </Badge>
                     </div>
 
-                    <CardContent className="p-6">
+                    <CardContent className="p-6 flex-1 flex flex-col">
                       <div className="flex justify-between items-start mb-3">
-                        <h3 className="text-xl font-bold text-gray-900 line-clamp-1">{meal.name}</h3>
-                        <span className="text-2xl font-bold text-orange-600">₹{meal.price}</span>
+                        <h3 className="text-xl font-bold text-gray-900 line-clamp-1 flex-1 mr-2">{meal.name}</h3>
+                        <span className="text-2xl font-bold text-orange-600 whitespace-nowrap">₹{meal.price}</span>
                       </div>
 
-                      <p className="text-gray-600 mb-4 line-clamp-2">{meal.description}</p>
+                      <p className="text-gray-600 mb-4 line-clamp-2 flex-1">{meal.description}</p>
 
-                      <div className="flex items-center gap-4 mb-4 text-sm text-gray-500">
-                        <div className="flex items-center gap-1">
-                          <Star className="w-4 h-4 text-yellow-500 fill-yellow-500" />
-                          <span className="font-medium">4.8</span>
-                          <span>(124)</span>
+                      <div className="mt-auto">
+                        <div className="flex items-center justify-between mb-4">
+                          <span className="text-sm text-gray-600">by {meal.provider.name}</span>
                         </div>
-                        <div className="flex items-center gap-1">
-                          <Clock className="w-4 h-4" />
-                          <span>30 min</span>
-                        </div>
-                        <div className="flex items-center gap-1">
-                          <MapPin className="w-4 h-4" />
-                          <span>2.3 km</span>
-                        </div>
-                      </div>
 
-                      <div className="flex items-center justify-between">
-                        <span className="text-sm text-gray-600">by {meal.provider.name}</span>
                         <div className="flex gap-2">
-                          <motion.div whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}>
+                          <motion.div whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }} className="flex-1">
                             <Button
                               onClick={() => addToCart(meal._id)}
                               variant="outline"
-                              className="rounded-full px-3"
+                              className="w-full"
                               size="sm"
                             >
-                              <ShoppingCart className="w-4 h-4" />
+                              <ShoppingCart className="w-4 h-4 mr-2" />
+                              Add to Cart
                             </Button>
                           </motion.div>
-                          <motion.div whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}>
+                          <motion.div whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }} className="flex-1">
                             <Button
                               onClick={() => orderMeal(meal)}
-                              className="bg-orange-500 hover:bg-orange-600 text-white rounded-full px-4"
+                              className="bg-orange-500 hover:bg-orange-600 text-white w-full"
                               size="sm"
                             >
                               Order Now

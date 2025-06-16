@@ -102,6 +102,7 @@ export default function OrdersPage() {
   const [updatingOrders, setUpdatingOrders] = useState<Set<string>>(new Set())
   const [selectedOrder, setSelectedOrder] = useState<Order | null>(null)
   const [showOrderDetails, setShowOrderDetails] = useState(false)
+  const [activeTab, setActiveTab] = useState<string>("pending") // Will be set properly in useEffect
 
   const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000/api"
 
@@ -110,6 +111,15 @@ export default function OrdersPage() {
       fetchOrders()
     }
   }, [user, token])
+
+  // Set initial tab based on user role
+  useEffect(() => {
+    if (user?.role === "provider") {
+      setActiveTab("pending")
+    } else {
+      setActiveTab("active")
+    }
+  }, [user?.role])
 
   // Remove auto-refresh - not needed for this implementation
 
@@ -152,12 +162,28 @@ export default function OrdersPage() {
       })
 
       if (response.ok) {
+        // Update the order in local state immediately
+        setOrders(prevOrders =>
+          prevOrders.map(order =>
+            order._id === orderId ? { ...order, status: newStatus } : order
+          )
+        )
+
         toast({
           title: "Order updated",
           description: `Order status changed to ${statusConfig[newStatus as keyof typeof statusConfig]?.text || newStatus}.`,
         })
-        // Refresh orders to get updated data
-        fetchOrders()
+
+        // Auto-switch tabs for better UX
+        if (user?.role === "provider") {
+          if (newStatus === "confirmed" || newStatus === "preparing" || newStatus === "ready") {
+            setActiveTab("active")
+          } else if (newStatus === "delivered" || newStatus === "cancelled") {
+            setActiveTab("completed")
+          }
+        }
+
+        // Don't call fetchOrders() to avoid page refresh and tab reset
       } else {
         const error = await response.json()
         throw new Error(error.error || "Failed to update order")
@@ -182,6 +208,8 @@ export default function OrdersPage() {
       return
     }
 
+    setUpdatingOrders(prev => new Set(prev).add(orderId))
+
     try {
       const response = await fetch(`${API_BASE_URL}/orders/${orderId}`, {
         method: "DELETE",
@@ -191,12 +219,24 @@ export default function OrdersPage() {
       })
 
       if (response.ok) {
+        // Update the order status in local state
+        setOrders(prevOrders =>
+          prevOrders.map(order =>
+            order._id === orderId ? { ...order, status: "cancelled" } : order
+          )
+        )
+
         toast({
           title: "Order cancelled",
           description: "Your order has been cancelled successfully.",
         })
-        // Refresh orders to show updated status
-        fetchOrders()
+
+        // Auto-switch to history tab for customers
+        if (user?.role === "customer") {
+          setActiveTab("history")
+        }
+
+        // Don't call fetchOrders() to avoid page refresh
       } else {
         const error = await response.json()
         throw new Error(error.error || "Failed to cancel order")
@@ -206,6 +246,12 @@ export default function OrdersPage() {
         title: "Cancellation failed",
         description: error instanceof Error ? error.message : "Failed to cancel order.",
         variant: "destructive",
+      })
+    } finally {
+      setUpdatingOrders(prev => {
+        const newSet = new Set(prev)
+        newSet.delete(orderId)
+        return newSet
       })
     }
   }
@@ -415,7 +461,7 @@ export default function OrdersPage() {
             </div>
 
             {/* Chef Order Tabs */}
-            <Tabs defaultValue="pending" className="space-y-6">
+            <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-6">
               <TabsList className="grid w-full grid-cols-3">
                 <TabsTrigger value="pending" className="flex items-center gap-2">
                   <AlertCircle className="w-4 h-4" />
@@ -529,7 +575,7 @@ export default function OrdersPage() {
             </div>
 
             {/* Customer Order Tabs */}
-            <Tabs defaultValue="active" className="space-y-6">
+            <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-6">
               <TabsList className="grid w-full grid-cols-2">
                 <TabsTrigger value="active" className="flex items-center gap-2">
                   <Package className="w-4 h-4" />

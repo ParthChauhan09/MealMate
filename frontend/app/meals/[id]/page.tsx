@@ -9,16 +9,12 @@ import { Badge } from "@/components/ui/badge"
 import { Textarea } from "@/components/ui/textarea"
 import { useAuth } from "@/contexts/AuthContext"
 import { useToast } from "@/hooks/use-toast"
-import { 
-  Star, 
-  Clock, 
-  MapPin, 
-  Heart, 
-  ShoppingCart, 
+import {
+  Heart,
+  ShoppingCart,
   ArrowLeft,
   User,
-  Calendar,
-  MessageSquare
+  Calendar
 } from "lucide-react"
 
 interface Meal {
@@ -37,18 +33,7 @@ interface Meal {
   }
 }
 
-interface Review {
-  _id: string
-  rating: number
-  text: string
-  user: {
-    _id: string
-    name: string
-    profilePhoto?: string
-  }
-  photos: string[]
-  createdAt: string
-}
+
 
 export default function MealDetailsPage() {
   const params = useParams()
@@ -57,18 +42,13 @@ export default function MealDetailsPage() {
   const { toast } = useToast()
   
   const [meal, setMeal] = useState<Meal | null>(null)
-  const [reviews, setReviews] = useState<Review[]>([])
   const [loading, setLoading] = useState(true)
-  const [reviewText, setReviewText] = useState("")
-  const [rating, setRating] = useState(5)
-  const [submittingReview, setSubmittingReview] = useState(false)
 
   const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000/api"
 
   useEffect(() => {
     if (params.id) {
       fetchMealDetails()
-      fetchReviews()
     }
   }, [params.id])
 
