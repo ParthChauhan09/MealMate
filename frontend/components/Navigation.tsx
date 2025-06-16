@@ -14,10 +14,12 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu"
 import { useAuth } from "@/contexts/AuthContext"
+import { useCart } from "@/contexts/CartContext"
 import { ChefHat, User, ShoppingCart, Settings, LogOut, Menu, X, Home, Search, Heart, Package, Utensils } from "lucide-react"
 
 export default function Navigation() {
   const { user, logout } = useAuth()
+  const { getTotalItems } = useCart()
   const pathname = usePathname()
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false)
 
@@ -107,9 +109,11 @@ export default function Navigation() {
                 <Link href="/cart">
                   <Button variant="ghost" size="sm" className="relative">
                     <ShoppingCart className="w-5 h-5" />
-                    <span className="absolute -top-2 -right-2 bg-orange-500 text-white text-xs rounded-full w-5 h-5 flex items-center justify-center">
-                      0
-                    </span>
+                    {getTotalItems() > 0 && (
+                      <span className="absolute -top-2 -right-2 bg-orange-500 text-white text-xs rounded-full w-5 h-5 flex items-center justify-center">
+                        {getTotalItems()}
+                      </span>
+                    )}
                   </Button>
                 </Link>
 
