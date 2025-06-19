@@ -29,12 +29,13 @@ const UserSchema = new Schema({
   },
   phone: {
     type: String,
-    required: false,
+    required: [true, "Phone number is required"],
     match: [/^\d{10}$/, "Please provide a valid 10-digit phone number"],
   },
   address: {
     type: String,
-    required: false,
+    required: [true, "Delivery address is required"],
+    trim: true,
   },
   profilePhoto: {
     type: String,

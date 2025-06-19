@@ -1,8 +1,8 @@
-const jwt = require('jsonwebtoken');
-const asyncHandler = require('./async');
-const ErrorResponse = require('../utils/errorResponse');
-const User = require('../models/User');
-const config = require('../config/config');
+const jwt = require("jsonwebtoken");
+const asyncHandler = require("./async");
+const ErrorResponse = require("../utils/errorResponse");
+const User = require("../models/User");
+const config = require("../config/config");
 
 // Protect routes
 exports.protect = asyncHandler(async (req, res, next) => {
@@ -10,10 +10,10 @@ exports.protect = asyncHandler(async (req, res, next) => {
 
   if (
     req.headers.authorization &&
-    req.headers.authorization.startsWith('Bearer')
+    req.headers.authorization.startsWith("Bearer")
   ) {
     // Set token from Bearer token in header
-    token = req.headers.authorization.split(' ')[1];
+    token = req.headers.authorization.split(" ")[1];
   } else if (req.cookies && req.cookies.token) {
     // Set token from cookie
     token = req.cookies.token;
@@ -21,7 +21,7 @@ exports.protect = asyncHandler(async (req, res, next) => {
 
   // Make sure token exists
   if (!token) {
-    return next(new ErrorResponse('Not authorized to access this route', 401));
+    return next(new ErrorResponse("Not authorized to access this route", 401));
   }
 
   try {
@@ -30,9 +30,14 @@ exports.protect = asyncHandler(async (req, res, next) => {
 
     req.user = await User.findById(decoded.id);
 
+    // Make sure user exists
+    if (!req.user) {
+      return next(new ErrorResponse("No user found with this token", 401));
+    }
+
     next();
   } catch (err) {
-    return next(new ErrorResponse('Not authorized to access this route', 401));
+    return next(new ErrorResponse("Not authorized to access this route", 401));
   }
 });
 

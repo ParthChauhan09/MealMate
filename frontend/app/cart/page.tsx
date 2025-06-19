@@ -45,6 +45,16 @@ export default function CartPage() {
       return
     }
 
+    if (!user.address || user.address.trim().length === 0) {
+      toast({
+        title: "Address required",
+        description: "Please update your profile with a delivery address before placing orders.",
+        variant: "destructive",
+      })
+      router.push("/profile")
+      return
+    }
+
     if (cartItems.length === 0) {
       toast({
         title: "Cart is empty",
@@ -68,7 +78,7 @@ export default function CartPage() {
           body: JSON.stringify({
             meal: item._id,
             quantity: item.quantity,
-            deliveryAddress: user.address || "Default address",
+            deliveryAddress: user.address,
             deliveryDate: new Date(Date.now() + 24 * 60 * 60 * 1000), // Tomorrow
             specialInstructions: "",
           }),

@@ -71,7 +71,12 @@ exports.logout = asyncHandler(async (req, res, next) => {
 // @route   GET /api/auth/me
 // @access  Private
 exports.getCurrentUser = asyncHandler(async (req, res, next) => {
-  const user = await User.findById(req.user.id);
+  // req.user is already set by the auth middleware and verified to exist
+  const user = await User.findById(req.user._id);
+
+  if (!user) {
+    return next(new ErrorResponse("User not found", 404));
+  }
 
   res.status(200).json({
     success: true,

@@ -54,6 +54,24 @@ export default function RegisterPage() {
       return
     }
 
+    if (!formData.phone || !/^\d{10}$/.test(formData.phone)) {
+      toast({
+        title: "Invalid phone number",
+        description: "Please provide a valid 10-digit phone number.",
+        variant: "destructive",
+      })
+      return
+    }
+
+    if (!formData.address || formData.address.trim().length < 10) {
+      toast({
+        title: "Invalid address",
+        description: "Please provide a complete delivery address (at least 10 characters).",
+        variant: "destructive",
+      })
+      return
+    }
+
     setLoading(true)
 
     try {
@@ -180,16 +198,17 @@ export default function RegisterPage() {
                 transition={{ delay: 0.6 }}
                 className="space-y-2"
               >
-                <Label htmlFor="phone">Phone Number (Optional)</Label>
+                <Label htmlFor="phone">Phone Number</Label>
                 <div className="relative">
                   <Phone className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-4 h-4" />
                   <Input
                     id="phone"
                     type="tel"
-                    placeholder="Enter your phone number"
+                    placeholder="Enter your 10-digit phone number"
                     value={formData.phone}
                     onChange={(e) => handleInputChange("phone", e.target.value)}
                     className="pl-10"
+                    required
                   />
                 </div>
               </motion.div>
@@ -200,16 +219,17 @@ export default function RegisterPage() {
                 transition={{ delay: 0.7 }}
                 className="space-y-2"
               >
-                <Label htmlFor="address">Address (Optional)</Label>
+                <Label htmlFor="address">Delivery Address</Label>
                 <div className="relative">
                   <MapPin className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-4 h-4" />
                   <Input
                     id="address"
                     type="text"
-                    placeholder="Enter your address"
+                    placeholder="Enter your complete delivery address"
                     value={formData.address}
                     onChange={(e) => handleInputChange("address", e.target.value)}
                     className="pl-10"
+                    required
                   />
                 </div>
               </motion.div>

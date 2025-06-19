@@ -19,6 +19,7 @@ interface AuthContextType {
   register: (userData: RegisterData) => Promise<void>
   logout: () => void
   loading: boolean
+  refreshUser: () => Promise<void>
 }
 
 interface RegisterData {
@@ -123,8 +124,14 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     localStorage.removeItem("token")
   }
 
+  const refreshUser = async () => {
+    if (token) {
+      await fetchCurrentUser(token)
+    }
+  }
+
   return (
-    <AuthContext.Provider value={{ user, token, login, register, logout, loading }}>{children}</AuthContext.Provider>
+    <AuthContext.Provider value={{ user, token, login, register, logout, loading, refreshUser }}>{children}</AuthContext.Provider>
   )
 }
 
