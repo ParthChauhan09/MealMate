@@ -1,6 +1,7 @@
 "use client"
 
 import { useState, useEffect } from "react"
+import { useRouter } from "next/navigation"
 import { motion, AnimatePresence } from "framer-motion"
 import { Card, CardContent } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
@@ -28,9 +29,10 @@ interface Meal {
 const categories = ["all", "breakfast", "lunch", "dinner", "snacks", "beverage"]
 
 export default function MealsPage() {
-  const { token } = useAuth()
+  const { token, user } = useAuth()
   const { addToCart } = useCart()
   const { toast } = useToast()
+  const router = useRouter()
   const [meals, setMeals] = useState<Meal[]>([])
   const [filteredMeals, setFilteredMeals] = useState<Meal[]>([])
   const [loading, setLoading] = useState(true)
@@ -101,12 +103,22 @@ export default function MealsPage() {
   }
 
   const orderMeal = async (meal: Meal) => {
-    if (!token) {
+    if (!token || !user) {
       toast({
         title: "Authentication required",
         description: "Please login to place an order.",
         variant: "destructive",
       })
+      return
+    }
+
+    if (!user.address || user.address.trim().length === 0) {
+      toast({
+        title: "Address required",
+        description: "Please update your profile with a delivery address before placing orders.",
+        variant: "destructive",
+      })
+      router.push("/profile")
       return
     }
 
@@ -120,7 +132,7 @@ export default function MealsPage() {
         body: JSON.stringify({
           meal: meal._id,
           quantity: 1,
-          deliveryAddress: "Default address", // This should come from user profile or form
+          deliveryAddress: user.address,
           deliveryDate: new Date(Date.now() + 24 * 60 * 60 * 1000), // Tomorrow
           specialInstructions: "",
         }),

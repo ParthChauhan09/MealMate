@@ -26,15 +26,22 @@ export default function Navigation() {
   const getNavItems = () => {
     const baseItems = [
       { href: "/", label: "Home", icon: Home },
-      { href: "/meals", label: "Browse Meals", icon: Search },
     ]
 
     if (user) {
+      // Only show Browse Meals for customers and non-logged in users
+      if (user.role === "customer") {
+        baseItems.push({ href: "/meals", label: "Browse Meals", icon: Search })
+      }
+
       baseItems.push({ href: "/orders", label: "Orders", icon: Package })
 
       if (user.role === "provider") {
         baseItems.push({ href: "/chef/meals", label: "My Meals", icon: Utensils })
       }
+    } else {
+      // Show Browse Meals for non-logged in users
+      baseItems.push({ href: "/meals", label: "Browse Meals", icon: Search })
     }
 
     return baseItems
@@ -106,16 +113,19 @@ export default function Navigation() {
           <div className="hidden md:flex items-center space-x-4">
             {user ? (
               <>
-                <Link href="/cart">
-                  <Button variant="ghost" size="sm" className="relative">
-                    <ShoppingCart className="w-5 h-5" />
-                    {getTotalItems() > 0 && (
-                      <span className="absolute -top-2 -right-2 bg-orange-500 text-white text-xs rounded-full w-5 h-5 flex items-center justify-center">
-                        {getTotalItems()}
-                      </span>
-                    )}
-                  </Button>
-                </Link>
+                {/* Cart Icon - Only show for customers */}
+                {user.role === "customer" && (
+                  <Link href="/cart">
+                    <Button variant="ghost" size="sm" className="relative">
+                      <ShoppingCart className="w-5 h-5" />
+                      {getTotalItems() > 0 && (
+                        <span className="absolute -top-2 -right-2 bg-orange-500 text-white text-xs rounded-full w-5 h-5 flex items-center justify-center">
+                          {getTotalItems()}
+                        </span>
+                      )}
+                    </Button>
+                  </Link>
+                )}
 
                 <DropdownMenu>
                   <DropdownMenuTrigger asChild>

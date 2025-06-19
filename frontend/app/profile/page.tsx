@@ -22,7 +22,7 @@ import {
 } from "lucide-react"
 
 export default function ProfilePage() {
-  const { user, token } = useAuth()
+  const { user, token, refreshUser } = useAuth()
   const { toast } = useToast()
   const [loading, setLoading] = useState(false)
   const [editing, setEditing] = useState(false)
@@ -126,7 +126,7 @@ export default function ProfilePage() {
         })
         setEditing(false)
         // Refresh user data
-        window.location.reload()
+        await refreshUser()
       } else {
         const error = await response.json()
         throw new Error(error.error || "Failed to update profile")

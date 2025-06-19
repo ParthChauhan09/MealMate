@@ -474,15 +474,15 @@ export default function OrdersPage() {
               </TabsList>
 
               <TabsContent value="pending">
-                <ChefPendingOrders orders={pendingOrders} />
+                <ChefPendingOrders orders={pendingOrders} onViewDetails={handleViewDetails} />
               </TabsContent>
 
               <TabsContent value="active">
-                <ChefActiveOrders orders={activeOrders} />
+                <ChefActiveOrders orders={activeOrders} onViewDetails={handleViewDetails} />
               </TabsContent>
 
               <TabsContent value="completed">
-                <ChefCompletedOrders orders={completedOrders} />
+                <ChefCompletedOrders orders={completedOrders} onViewDetails={handleViewDetails} />
               </TabsContent>
             </Tabs>
           </motion.div>
@@ -584,11 +584,11 @@ export default function OrdersPage() {
               </TabsList>
 
               <TabsContent value="active">
-                <CustomerActiveOrders orders={activeOrders} />
+                <CustomerActiveOrders orders={activeOrders} onViewDetails={handleViewDetails} />
               </TabsContent>
 
               <TabsContent value="history">
-                <CustomerOrderHistory orders={pastOrders} />
+                <CustomerOrderHistory orders={pastOrders} onViewDetails={handleViewDetails} />
               </TabsContent>
             </Tabs>
           </motion.div>
@@ -598,7 +598,7 @@ export default function OrdersPage() {
   }
 
   // Chef Pending Orders Component
-  function ChefPendingOrders({ orders }: { orders: Order[] }) {
+  function ChefPendingOrders({ orders, onViewDetails }: { orders: Order[], onViewDetails: (order: Order) => void }) {
     if (orders.length === 0) {
       return (
         <Card>
@@ -690,7 +690,7 @@ export default function OrdersPage() {
                   </Button>
                   <Button
                     variant="outline"
-                    onClick={() => handleViewDetails(order)}
+                    onClick={() => onViewDetails(order)}
                   >
                     <Eye className="w-4 h-4 mr-2" />
                     View Details
@@ -705,7 +705,7 @@ export default function OrdersPage() {
   }
 
   // Chef Active Orders Component
-  function ChefActiveOrders({ orders }: { orders: Order[] }) {
+  function ChefActiveOrders({ orders, onViewDetails }: { orders: Order[], onViewDetails: (order: Order) => void }) {
     if (orders.length === 0) {
       return (
         <Card>
@@ -814,7 +814,7 @@ export default function OrdersPage() {
                     )}
                     <Button
                       variant="outline"
-                      onClick={() => handleViewDetails(order)}
+                      onClick={() => onViewDetails(order)}
                     >
                       <Eye className="w-4 h-4 mr-2" />
                       View Details
@@ -830,7 +830,7 @@ export default function OrdersPage() {
   }
 
   // Chef Completed Orders Component
-  function ChefCompletedOrders({ orders }: { orders: Order[] }) {
+  function ChefCompletedOrders({ orders, onViewDetails }: { orders: Order[], onViewDetails: (order: Order) => void }) {
     if (orders.length === 0) {
       return (
         <Card>
@@ -905,7 +905,7 @@ export default function OrdersPage() {
 
                   <Button
                     variant="outline"
-                    onClick={() => handleViewDetails(order)}
+                    onClick={() => onViewDetails(order)}
                   >
                     <Eye className="w-4 h-4 mr-2" />
                     View Details
@@ -920,7 +920,7 @@ export default function OrdersPage() {
   }
 
   // Customer Active Orders Component
-  function CustomerActiveOrders({ orders }: { orders: Order[] }) {
+  function CustomerActiveOrders({ orders, onViewDetails }: { orders: Order[], onViewDetails: (order: Order) => void }) {
     if (orders.length === 0) {
       return (
         <Card>
@@ -991,57 +991,162 @@ export default function OrdersPage() {
 
                   {/* Order Progress */}
                   <div className="mb-6">
-                    <div className="flex items-center justify-between mb-2">
-                      <span className="text-sm font-medium text-gray-600">Order Progress</span>
-                      <span className="text-sm text-gray-500">{statusInfo?.description}</span>
+                    <div className="flex items-center justify-between mb-4">
+                      <span className="text-sm font-semibold text-gray-700">Order Progress</span>
+                      <div className="flex items-center gap-2">
+                        <div className={`w-2 h-2 rounded-full ${statusInfo?.color}`}></div>
+                        <span className="text-sm font-medium text-gray-600">{statusInfo?.description}</span>
+                      </div>
                     </div>
 
-                    <div className="flex items-center space-x-2">
-                      {["pending", "confirmed", "preparing", "ready", "delivered"].map((status, idx) => {
-                        const isActive = ["pending", "confirmed", "preparing", "ready", "delivered"].indexOf(order.status) >= idx
-                        const isCurrent = order.status === status
-                        const isCompleted = ["pending", "confirmed", "preparing", "ready", "delivered"].indexOf(order.status) > idx
+                    {/* Progress Container */}
+                    <div className="relative bg-gray-50 rounded-lg p-4">
+                      {/* Progress Bar Background */}
+                      <div className="absolute top-1/2 left-8 right-8 h-1 bg-gray-200 rounded-full transform -translate-y-1/2"></div>
 
-                        return (
-                          <div key={status} className="flex items-center">
-                            <div
-                              className={`w-3 h-3 rounded-full border-2 transition-all duration-300 ${
-                                isCompleted
-                                  ? "bg-green-500 border-green-500"
-                                  : isCurrent
-                                    ? "bg-orange-500 border-orange-500 animate-pulse"
-                                    : isActive
-                                      ? "bg-blue-500 border-blue-500"
-                                      : "bg-gray-200 border-gray-300"
-                              }`}
-                            />
-                            {idx < 4 && (
-                              <div
-                                className={`w-8 h-0.5 transition-all duration-300 ${
-                                  isCompleted || (isActive && idx < ["pending", "confirmed", "preparing", "ready", "delivered"].indexOf(order.status))
-                                    ? "bg-green-500"
-                                    : "bg-gray-200"
+                      {/* Active Progress Bar */}
+                      <motion.div
+                        className="absolute top-1/2 left-8 h-1 bg-gradient-to-r from-green-400 to-green-500 rounded-full transform -translate-y-1/2"
+                        initial={{ width: 0 }}
+                        animate={{
+                          width: `${Math.max(0, (["pending", "confirmed", "preparing", "ready", "delivered"].indexOf(order.status) / 4) * 100)}%`
+                        }}
+                        transition={{ duration: 1.5, ease: "easeOut", delay: 0.3 }}
+                        style={{
+                          maxWidth: 'calc(100% - 4rem)'
+                        }}
+                      >
+                        {/* Animated Shimmer Effect */}
+                        <motion.div
+                          className="absolute inset-0 bg-gradient-to-r from-transparent via-white to-transparent opacity-30 rounded-full"
+                          animate={{
+                            x: ['-100%', '100%']
+                          }}
+                          transition={{
+                            duration: 2,
+                            repeat: Infinity,
+                            ease: "linear"
+                          }}
+                        />
+                      </motion.div>
+
+                      {/* Progress Steps */}
+                      <div className="relative flex justify-between items-center">
+                        {["pending", "confirmed", "preparing", "ready", "delivered"].map((status, idx) => {
+                          const statusOrder = ["pending", "confirmed", "preparing", "ready", "delivered"]
+                          const currentStatusIndex = statusOrder.indexOf(order.status)
+                          const isCompleted = currentStatusIndex > idx
+                          const isCurrent = currentStatusIndex === idx
+                          const stepIcons = ["⏳", "✅", "👨‍🍳", "📦", "🚚"]
+
+                          return (
+                            <motion.div
+                              key={status}
+                              className="flex flex-col items-center relative z-10"
+                              initial={{ scale: 0.8, opacity: 0 }}
+                              animate={{ scale: 1, opacity: 1 }}
+                              transition={{ delay: idx * 0.1, duration: 0.3 }}
+                            >
+                              {/* Step Circle */}
+                              <motion.div
+                                className={`relative w-8 h-8 rounded-full border-2 flex items-center justify-center transition-all duration-500 ${
+                                  isCompleted
+                                    ? "bg-green-500 border-green-500 shadow-lg shadow-green-200"
+                                    : isCurrent
+                                      ? "bg-orange-500 border-orange-500 shadow-lg shadow-orange-200"
+                                      : "bg-white border-gray-300 shadow-sm"
                                 }`}
-                              />
-                            )}
-                          </div>
-                        )
-                      })}
+                                animate={isCurrent ? {
+                                  scale: [1, 1.1, 1],
+                                  boxShadow: [
+                                    "0 4px 6px -1px rgba(251, 146, 60, 0.3)",
+                                    "0 10px 15px -3px rgba(251, 146, 60, 0.4)",
+                                    "0 4px 6px -1px rgba(251, 146, 60, 0.3)"
+                                  ]
+                                } : {}}
+                                transition={isCurrent ? {
+                                  duration: 2,
+                                  repeat: Infinity,
+                                  ease: "easeInOut"
+                                } : {}}
+                              >
+                                {/* Icon or Checkmark */}
+                                {isCompleted ? (
+                                  <motion.div
+                                    initial={{ scale: 0 }}
+                                    animate={{ scale: 1 }}
+                                    transition={{ delay: 0.2, type: "spring", stiffness: 200 }}
+                                    className="text-white text-sm"
+                                  >
+                                    ✓
+                                  </motion.div>
+                                ) : (
+                                  <span className={`text-sm ${isCurrent ? "text-white" : "text-gray-400"}`}>
+                                    {stepIcons[idx]}
+                                  </span>
+                                )}
+
+                                {/* Pulse Effect for Current Step */}
+                                {isCurrent && (
+                                  <motion.div
+                                    className="absolute inset-0 rounded-full bg-orange-400"
+                                    animate={{
+                                      scale: [1, 1.5, 1],
+                                      opacity: [0.7, 0, 0.7]
+                                    }}
+                                    transition={{
+                                      duration: 2,
+                                      repeat: Infinity,
+                                      ease: "easeInOut"
+                                    }}
+                                  />
+                                )}
+                              </motion.div>
+
+                              {/* Step Label */}
+                              <motion.span
+                                className={`text-xs mt-2 text-center transition-all duration-300 ${
+                                  isCompleted || isCurrent
+                                    ? "text-gray-700 font-semibold"
+                                    : "text-gray-400 font-medium"
+                                }`}
+                                initial={{ opacity: 0, y: 10 }}
+                                animate={{ opacity: 1, y: 0 }}
+                                transition={{ delay: idx * 0.1 + 0.2 }}
+                              >
+                                {["Pending", "Confirmed", "Preparing", "Ready", "Delivered"][idx]}
+                              </motion.span>
+
+                              {/* Time Estimate (for current step) */}
+                              {isCurrent && (
+                                <motion.div
+                                  className="absolute -bottom-8 left-1/2 transform -translate-x-1/2"
+                                  initial={{ opacity: 0, scale: 0.8 }}
+                                  animate={{ opacity: 1, scale: 1 }}
+                                  transition={{ delay: 0.5 }}
+                                >
+                                  <div className="bg-orange-100 text-orange-700 text-xs px-2 py-1 rounded-full whitespace-nowrap">
+                                    {status === "pending" && "Awaiting confirmation"}
+                                    {status === "confirmed" && "Starting soon"}
+                                    {status === "preparing" && "Cooking now"}
+                                    {status === "ready" && "Ready for pickup"}
+                                    {status === "delivered" && "Completed"}
+                                  </div>
+                                </motion.div>
+                              )}
+                            </motion.div>
+                          )
+                        })}
+                      </div>
                     </div>
 
-                    <div className="flex justify-between mt-1">
-                      {["Pending", "Confirmed", "Preparing", "Ready", "Delivered"].map((label, idx) => (
-                        <span
-                          key={label}
-                          className={`text-xs transition-all duration-300 ${
-                            ["pending", "confirmed", "preparing", "ready", "delivered"].indexOf(order.status) >= idx
-                              ? "text-gray-700 font-medium"
-                              : "text-gray-400"
-                          }`}
-                        >
-                          {label}
-                        </span>
-                      ))}
+                    {/* Progress Percentage */}
+                    <div className="mt-3 flex justify-between items-center text-xs text-gray-500">
+                      <span>Order placed</span>
+                      <span className="font-medium">
+                        {Math.round((["pending", "confirmed", "preparing", "ready", "delivered"].indexOf(order.status) + 1) / 5 * 100)}% Complete
+                      </span>
+                      <span>Delivered</span>
                     </div>
                   </div>
 
@@ -1059,7 +1164,7 @@ export default function OrdersPage() {
                     <Button
                       variant="outline"
                       size="sm"
-                      onClick={() => handleViewDetails(order)}
+                      onClick={() => onViewDetails(order)}
                     >
                       <Eye className="w-4 h-4 mr-2" />
                       View Details
@@ -1075,7 +1180,7 @@ export default function OrdersPage() {
   }
 
   // Customer Order History Component
-  function CustomerOrderHistory({ orders }: { orders: Order[] }) {
+  function CustomerOrderHistory({ orders, onViewDetails }: { orders: Order[], onViewDetails: (order: Order) => void }) {
     if (orders.length === 0) {
       return (
         <Card>
@@ -1157,7 +1262,7 @@ export default function OrdersPage() {
                     <Button
                       variant="outline"
                       size="sm"
-                      onClick={() => handleViewDetails(order)}
+                      onClick={() => onViewDetails(order)}
                     >
                       <Eye className="w-4 h-4 mr-2" />
                       View Details
@@ -1177,9 +1282,11 @@ export default function OrdersPage() {
     <>
       {user?.role === "provider" ? <ChefOrdersInterface /> : <CustomerOrdersInterface />}
 
+
+
       {/* Order Details Modal */}
       <Dialog open={showOrderDetails} onOpenChange={setShowOrderDetails}>
-        <DialogContent className="max-w-2xl max-h-[80vh] overflow-y-auto">
+        <DialogContent className="max-w-2xl max-h-[80vh] overflow-y-auto z-[9999]">
           <DialogHeader>
             <DialogTitle>Order Details</DialogTitle>
           </DialogHeader>

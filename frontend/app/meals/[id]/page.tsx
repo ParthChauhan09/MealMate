@@ -99,6 +99,16 @@ export default function MealDetailsPage() {
       return
     }
 
+    if (!user.address || user.address.trim().length === 0) {
+      toast({
+        title: "Address required",
+        description: "Please update your profile with a delivery address before placing orders.",
+        variant: "destructive",
+      })
+      router.push("/profile")
+      return
+    }
+
     try {
       const response = await fetch(`${API_BASE_URL}/orders`, {
         method: "POST",
@@ -109,7 +119,7 @@ export default function MealDetailsPage() {
         body: JSON.stringify({
           meal: meal?._id,
           quantity: 1,
-          deliveryAddress: user.address || "Default address",
+          deliveryAddress: user.address,
           deliveryDate: new Date(Date.now() + 24 * 60 * 60 * 1000),
           specialInstructions: "",
         }),
