@@ -164,8 +164,6 @@ export default function ChefMealsPage() {
       if (imageFile) {
         form.append("mealPhoto", imageFile);
       }
-      // Debug: log all form entries before sending
-      console.log([...form.entries()]);
 
       const response = await fetch(url, {
         method,
