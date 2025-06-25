@@ -44,6 +44,7 @@ interface Meal {
   availability: boolean
   user: string
   provider: string
+  photo?: string 
 }
 
 const categories = ["breakfast", "lunch", "dinner", "snack", "beverage"]

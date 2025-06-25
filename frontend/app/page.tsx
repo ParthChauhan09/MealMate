@@ -1,7 +1,7 @@
 "use client"
 
 import { useState, useEffect } from "react"
-import { motion, AnimatePresence, Transition, AnimationControls, Variants } from "framer-motion"
+import { motion, AnimatePresence, Transition, Variants } from "framer-motion"
 import { useCart } from "@/contexts/CartContext"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent } from "@/components/ui/card"
