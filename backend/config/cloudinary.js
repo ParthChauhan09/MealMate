@@ -30,6 +30,16 @@ const reviewStorage = new CloudinaryStorage({
   }
 });
 
+// Configure storage for meal/product photos
+const mealStorage = new CloudinaryStorage({
+  cloudinary: cloudinary,
+  params: {
+    folder: 'mealmate/meals',
+    allowed_formats: ['jpg', 'jpeg', 'png'],
+    transformation: [{ width: 800, height: 600, crop: 'limit' }]
+  }
+});
+
 // Create multer upload instances
 const uploadProfilePhoto = multer({ 
   storage: profileStorage,
@@ -61,8 +71,24 @@ const uploadReviewPhotos = multer({
   }
 }).array('reviewPhotos', 5); // Allow up to 5 photos per review
 
+// Create multer upload instance for meal photos
+const uploadMealPhoto = multer({
+  storage: mealStorage,
+  limits: { fileSize: 3 * 1024 * 1024 }, // 3MB limit
+  fileFilter: (req, file, cb) => {
+    const filetypes = /jpeg|jpg|png/;
+    const mimetype = filetypes.test(file.mimetype);
+    const extname = filetypes.test(path.extname(file.originalname).toLowerCase());
+    if (mimetype && extname) {
+      return cb(null, true);
+    }
+    cb(new Error('Only .jpg, .jpeg and .png files are allowed!'));
+  }
+}).single('mealPhoto');
+
 module.exports = {
   cloudinary,
   uploadProfilePhoto,
-  uploadReviewPhotos
+  uploadReviewPhotos,
+  uploadMealPhoto
 };

@@ -66,6 +66,10 @@ export default function ChefMealsPage() {
     availability: true
   })
 
+  // Add state for image file and preview
+  const [imageFile, setImageFile] = useState<File | null>(null);
+  const [imagePreview, setImagePreview] = useState<string | null>(null);
+
   const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000/api"
 
   useEffect(() => {
@@ -106,8 +110,10 @@ export default function ChefMealsPage() {
       price: "",
       category: "",
       availability: true
-    })
-    setEditingMeal(null)
+    });
+    setImageFile(null);
+    setImagePreview(null);
+    setEditingMeal(null);
   }
 
   const openCreateDialog = () => {
@@ -127,6 +133,16 @@ export default function ChefMealsPage() {
     setIsDialogOpen(true)
   }
 
+  const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0] || null;
+    setImageFile(file);
+    if (file) {
+      setImagePreview(URL.createObjectURL(file));
+    } else {
+      setImagePreview(null);
+    }
+  }
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
     setSubmitting(true)
@@ -138,17 +154,25 @@ export default function ChefMealsPage() {
       
       const method = editingMeal ? "PUT" : "POST"
 
+      // Use FormData for file upload
+      const form = new FormData();
+      form.append("name", formData.name);
+      form.append("description", formData.description);
+      form.append("price", formData.price);
+      form.append("category", formData.category);
+      form.append("availability", String(formData.availability));
+      if (imageFile) {
+        form.append("mealPhoto", imageFile);
+      }
+      // Debug: log all form entries before sending
+      console.log([...form.entries()]);
+
       const response = await fetch(url, {
         method,
         headers: {
-          "Content-Type": "application/json",
           Authorization: `Bearer ${token}`,
         },
-        body: JSON.stringify({
-          ...formData,
-          price: parseFloat(formData.price)
-          // Backend will automatically set user and provider from authenticated user
-        }),
+        body: form,
       })
 
       if (response.ok) {
@@ -279,13 +303,15 @@ export default function ChefMealsPage() {
                 </Button>
               </DialogTrigger>
               
-              <DialogContent className="max-w-md">
+              <DialogContent className="max-w-md" aria-describedby="meal-dialog-desc">
                 <DialogHeader>
                   <DialogTitle>
                     {editingMeal ? "Edit Meal" : "Create New Meal"}
                   </DialogTitle>
                 </DialogHeader>
-                
+                <p id="meal-dialog-desc" className="sr-only">
+                  Fill out the form to create or edit a meal. All fields are required.
+                </p>
                 <form onSubmit={handleSubmit} className="space-y-4">
                   <div>
                     <Label htmlFor="name">Meal Name</Label>
@@ -341,6 +367,19 @@ export default function ChefMealsPage() {
                         ))}
                       </SelectContent>
                     </Select>
+                  </div>
+
+                  <div>
+                    <Label htmlFor="mealPhoto">Meal Image</Label>
+                    <Input
+                      id="mealPhoto"
+                      type="file"
+                      accept="image/*"
+                      onChange={handleImageChange}
+                    />
+                    {imagePreview && (
+                      <img src={imagePreview} alt="Preview" className="mt-2 w-32 h-32 object-cover rounded" />
+                    )}
                   </div>
 
                   <div className="flex items-center space-x-2">
@@ -443,9 +482,17 @@ export default function ChefMealsPage() {
                 >
                   <Card className="overflow-hidden h-full flex flex-col">
                     <div className="relative">
-                      <div className="w-full h-48 bg-gradient-to-br from-orange-100 to-orange-200 flex items-center justify-center">
-                        <div className="text-6xl">🍽️</div>
-                      </div>
+                      {meal.photo ? (
+                        <img
+                          src={meal.photo}
+                          alt={meal.name}
+                          className="w-full h-48 object-cover"
+                        />
+                      ) : (
+                        <div className="w-full h-48 bg-gradient-to-br from-orange-100 to-orange-200 flex items-center justify-center">
+                          <div className="text-6xl">🍽️</div>
+                        </div>
+                      )}
                       <Badge
                         className={`absolute top-4 right-4 ${
                           meal.availability ? "bg-green-500" : "bg-red-500"

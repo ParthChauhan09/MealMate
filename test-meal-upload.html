@@ -1,0 +1,19 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Test Router Upload</title>
+</head>
+<body>
+  <h1>Test Router File Upload</h1>
+  <form action="http://localhost:5000/api/meals/test-router" method="post" enctype="multipart/form-data">
+    <input type="text" name="name" value="Test Meal" /> <br />
+    <input type="text" name="description" value="Test Description" /> <br />
+    <input type="text" name="price" value="10" /> <br />
+    <input type="text" name="category" value="dinner" /> <br />
+    <input type="text" name="availability" value="true" /> <br />
+    <input type="file" name="testFile" /> <br />
+    <button type="submit">Upload</button>
+  </form>
+</body>
+</html>

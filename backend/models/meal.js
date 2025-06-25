@@ -34,6 +34,10 @@ const tiffinSchema = new Schema({
     type: mongoose.Schema.ObjectId,
     ref: "User",
     required: true,
+  },
+  photo: {
+    type: String, // Cloudinary URL
+    default: '',
   }
 });
 

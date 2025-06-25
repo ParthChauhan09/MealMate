@@ -1,6 +1,9 @@
 const Meal = require("../models/Meal");
+const User = require("../models/user");
 const ErrorResponse = require("../utils/errorResponse");
 const asyncHandler = require("../middleware/async");
+const multer = require('multer');
+const upload = multer();
 
 // @desc    Get all meals
 // @route   GET /api/meals
@@ -40,17 +43,55 @@ exports.getMealById = asyncHandler(async (req, res, next) => {
 // @desc    Create new meal
 // @route   POST /api/meals
 // @access  Private/Provider
-exports.createMeal = asyncHandler(async (req, res, next) => {
-  // Add user and provider to req.body from authenticated user
-  req.body.user = req.user.id;
-  req.body.provider = req.user.id;
-
-  const meal = await Meal.create(req.body);
-  res.status(201).json({
-    success: true,
-    data: meal,
-  });
-});
+exports.createMeal = [
+  upload.single('mealPhoto'), // Use plain multer
+  asyncHandler(async (req, res, next) => {
+    try {
+      req.body.price = parseFloat(req.body.price);
+      req.body.availability = req.body.availability === 'true' || req.body.availability === true;
+      // Upload to Cloudinary manually if file exists
+      let photoUrl = '';
+      if (req.file) {
+        const { cloudinary } = require('../config/cloudinary');
+        // Use a Promise to handle the upload_stream callback
+        await new Promise((resolve, reject) => {
+          const stream = cloudinary.uploader.upload_stream(
+            { folder: 'mealmate/meals', resource_type: 'image' },
+            (error, result) => {
+              if (error) {
+                reject(new ErrorResponse('Cloudinary upload failed', 500));
+              } else {
+                req.body.photo = result.secure_url;
+                resolve();
+              }
+            }
+          );
+          stream.end(req.file.buffer);
+        });
+      }
+      // For testing without authentication, set user and provider manually
+      let fallbackUserId = null;
+      if (!req.user) {
+        // Find any user in the database
+        const anyUser = await User.findOne();
+        if (anyUser) {
+          fallbackUserId = anyUser._id;
+        }
+      }
+      req.body.user = req.body.user || fallbackUserId;
+      req.body.provider = req.body.provider || fallbackUserId;
+      Meal.create({ ...req.body, photo: req.body.photo || '' })
+        .then(meal => res.status(201).json({ success: true, data: meal }))
+        .catch(err => {
+          console.error('Meal creation error:', err);
+          res.status(500).json({ success: false, error: err.message, stack: err.stack });
+        });
+    } catch (err) {
+      console.error('Meal creation error:', err);
+      res.status(500).json({ success: false, error: err.message, stack: err.stack });
+    }
+  })
+];
 
 // @desc    Update meal
 // @route   PUT /api/meals/:id
