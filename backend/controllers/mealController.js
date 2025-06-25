@@ -1,4 +1,4 @@
-const Meal = require("../models/Meal");
+const Meal = require("../models/meal");
 const User = require("../models/user");
 const ErrorResponse = require("../utils/errorResponse");
 const asyncHandler = require("../middleware/async");

@@ -24,6 +24,7 @@ interface Meal {
     _id: string
     name: string
   }
+  photo?: string // Add photo property for image support
 }
 
 const categories = ["all", "breakfast", "lunch", "dinner", "snacks", "beverage"]
@@ -254,9 +255,18 @@ export default function MealsPage() {
                 >
                   <Card className="overflow-hidden shadow-lg hover:shadow-xl transition-all duration-300 border-0 bg-white h-full flex flex-col">
                     <div className="relative">
-                      <div className="w-full h-48 bg-gradient-to-br from-orange-100 to-orange-200 flex items-center justify-center">
-                        <div className="text-6xl">🍽️</div>
-                      </div>
+                      {meal.photo && meal.photo.startsWith('http') ? (
+                        <img
+                          src={meal.photo}
+                          alt={meal.name}
+                          className="w-full h-48 object-cover border-b-4 border-orange-500"
+                          onError={(e) => { (e.target as HTMLImageElement).style.display = 'none'; }}
+                        />
+                      ) : (
+                        <div className="w-full h-48 bg-gradient-to-br from-orange-100 to-orange-200 flex items-center justify-center border-b-4 border-orange-500">
+                          <div className="text-6xl">🍽️</div>
+                        </div>
+                      )}
                       <motion.button
                         className="absolute top-4 right-4 p-2 rounded-full bg-white/90 backdrop-blur-sm shadow-lg"
                         onClick={() => toggleLike(meal._id)}

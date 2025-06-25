@@ -1,5 +1,5 @@
 const Review = require("../models/Review");
-const Meal = require("../models/Meal");
+const Meal = require("../models/meal");
 const ErrorResponse = require("../utils/errorResponse");
 const asyncHandler = require("../middleware/async");
 const config = require("../config/config");
