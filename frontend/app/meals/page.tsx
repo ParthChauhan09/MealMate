@@ -100,6 +100,7 @@ export default function MealsPage() {
       price: meal.price,
       category: meal.category,
       provider: meal.provider,
+      photo: meal.photo, // Ensure photo is included
     })
   }
 

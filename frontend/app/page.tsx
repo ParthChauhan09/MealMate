@@ -1,7 +1,7 @@
 "use client"
 
 import { useState, useEffect } from "react"
-import { motion, AnimatePresence } from "framer-motion"
+import { motion, AnimatePresence, Transition, AnimationControls, Variants } from "framer-motion"
 import { useCart } from "@/contexts/CartContext"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent } from "@/components/ui/card"
@@ -29,6 +29,7 @@ interface Meal {
     _id: string
     name: string
   }
+  photo?: string // Cloudinary image URL for the meal
 }
 
 const containerVariants = {
@@ -42,26 +43,26 @@ const containerVariants = {
   },
 }
 
-const itemVariants = {
+const itemVariants: Variants = {
   hidden: { y: 20, opacity: 0 },
   visible: {
     y: 0,
     opacity: 1,
     transition: {
-      type: "spring",
+      type: "spring" as const,
       stiffness: 100,
       damping: 10,
     },
   },
 }
 
-const floatingVariants = {
+const floatingVariants: Variants = {
   animate: {
     y: [-10, 10, -10],
     transition: {
       duration: 3,
-      repeat: Number.POSITIVE_INFINITY,
-      ease: "easeInOut",
+      repeat: Infinity,
+      ease: [0.42, 0, 0.58, 1] as any, // cubic-bezier for 'easeInOut'
     },
   },
 }
@@ -314,8 +315,21 @@ export default function MealMatePage() {
                   >
                     <Card className="overflow-hidden shadow-lg hover:shadow-2xl transition-all duration-300 border-0 bg-white h-full flex flex-col">
                       <div className="relative">
-                        <div className="w-full h-48 bg-gradient-to-br from-orange-100 to-orange-200 flex items-center justify-center">
-                          <div className="text-6xl">🍽️</div>
+                        <div className="w-full h-48 bg-gradient-to-br from-orange-100 to-orange-200 flex items-center justify-center overflow-hidden">
+                          {meal.photo ? (
+                            <img
+                              src={meal.photo}
+                              alt={meal.name}
+                              className="object-cover w-full h-full"
+                              onError={e => (e.currentTarget.src = "/placeholder.jpg")}
+                            />
+                          ) : (
+                            <img
+                              src="/placeholder.jpg"
+                              alt="No image"
+                              className="object-cover w-full h-full"
+                            />
+                          )}
                         </div>
                         <motion.button
                           className="absolute top-4 right-4 p-2 rounded-full bg-white/90 backdrop-blur-sm shadow-lg"

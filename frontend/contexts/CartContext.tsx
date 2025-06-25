@@ -13,6 +13,7 @@ interface CartItem {
     name: string
   }
   quantity: number
+  photo?: string // Cloudinary image URL for the meal
 }
 
 interface CartContextType {
