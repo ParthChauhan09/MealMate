@@ -99,6 +99,7 @@ export default function MealsPage() {
       name: meal.name,
       price: meal.price,
       category: meal.category,
+      photo: meal.photo,
       provider: meal.provider,
     })
   }

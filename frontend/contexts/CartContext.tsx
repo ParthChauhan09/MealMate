@@ -8,6 +8,7 @@ interface CartItem {
   name: string
   price: number
   category: string
+  photo?: string
   provider: {
     _id: string
     name: string
@@ -42,6 +43,7 @@ interface CartProviderProps {
 
 export const CartProvider: React.FC<CartProviderProps> = ({ children }) => {
   const [cartItems, setCartItems] = useState<CartItem[]>([])
+  const [isLoaded, setIsLoaded] = useState(false)
   const { toast } = useToast()
 
   // Load cart from localStorage on mount
@@ -49,18 +51,24 @@ export const CartProvider: React.FC<CartProviderProps> = ({ children }) => {
     const savedCart = localStorage.getItem('mealmate-cart')
     if (savedCart) {
       try {
-        setCartItems(JSON.parse(savedCart))
+        const parsedCart = JSON.parse(savedCart)
+        if (Array.isArray(parsedCart)) {
+          setCartItems(parsedCart)
+        }
       } catch (error) {
         console.error('Error loading cart from localStorage:', error)
         localStorage.removeItem('mealmate-cart')
       }
     }
+    setIsLoaded(true)
   }, [])
 
-  // Save cart to localStorage whenever it changes
+  // Save cart to localStorage whenever it changes (but only after initial load)
   useEffect(() => {
-    localStorage.setItem('mealmate-cart', JSON.stringify(cartItems))
-  }, [cartItems])
+    if (isLoaded) {
+      localStorage.setItem('mealmate-cart', JSON.stringify(cartItems))
+    }
+  }, [cartItems, isLoaded])
 
   const addToCart = (meal: Omit<CartItem, 'quantity'>) => {
     setCartItems(prevItems => {
