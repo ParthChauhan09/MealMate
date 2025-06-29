@@ -106,9 +106,14 @@ exports.updateProfilePhoto = asyncHandler(async (req, res, next) => {
 
 // @desc    Delete user
 // @route   DELETE /api/users/:id
-// @access  Private
+// @access  Private/Admin
 exports.deleteUser = asyncHandler(async (req, res, next) => {
-  const user = await User.findByIdAndDelete(req.params.id);
+  // Prevent admin from deleting themselves
+  if (req.user._id.toString() === req.params.id) {
+    return next(new ErrorResponse("You cannot delete your own account", 400));
+  }
+
+  const user = await User.findById(req.params.id);
 
   if (!user) {
     return next(
@@ -116,8 +121,16 @@ exports.deleteUser = asyncHandler(async (req, res, next) => {
     );
   }
 
+  // Prevent deletion of other admin accounts (optional security measure)
+  if (user.role === "admin" && req.user.role === "admin") {
+    return next(new ErrorResponse("Cannot delete another admin account", 403));
+  }
+
+  await User.findByIdAndDelete(req.params.id);
+
   res.status(200).json({
     success: true,
+    message: `User ${user.name} has been deleted successfully`,
     data: {},
   });
 });

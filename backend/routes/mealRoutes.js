@@ -2,6 +2,7 @@ const express = require("express");
 const router = express.Router();
 const mealController = require("../controllers/mealController");
 const { protect, authorize } = require("../middleware/auth");
+const { uploadMealPhoto } = require("../middleware/fileUpload");
 const { roles } = require("../config/config");
 const reviewRouter = require("./reviewRoutes");
 
@@ -13,11 +14,18 @@ router.get("/", mealController.getAllMeals);
 router.get("/:id", mealController.getMealById);
 
 // Provider only routes
-router.post("/", protect, authorize(roles.PROVIDER), mealController.createMeal);
+router.post(
+  "/",
+  protect,
+  authorize(roles.PROVIDER),
+  uploadMealPhoto,
+  mealController.createMeal
+);
 router.put(
   "/:id",
   protect,
   authorize(roles.PROVIDER),
+  uploadMealPhoto,
   mealController.updateMeal
 );
 router.delete(
@@ -25,6 +33,15 @@ router.delete(
   protect,
   authorize(roles.PROVIDER),
   mealController.deleteMeal
+);
+
+// Meal photo upload route
+router.put(
+  "/:id/photo",
+  protect,
+  authorize(roles.PROVIDER),
+  uploadMealPhoto,
+  mealController.uploadMealPhoto
 );
 
 module.exports = router;

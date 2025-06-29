@@ -39,7 +39,8 @@ const UserSchema = new Schema({
   },
   profilePhoto: {
     type: String,
-    default: "https://res.cloudinary.com/demo/image/upload/v1/sample.jpg", // Default placeholder image
+    default:
+      "https://upload.wikimedia.org/wikipedia/commons/a/ac/Default_pfp.jpg", // Default placeholder image
   },
 });
 

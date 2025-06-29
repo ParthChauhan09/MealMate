@@ -107,3 +107,44 @@ exports.deleteMeal = asyncHandler(async (req, res, next) => {
     data: {},
   });
 });
+
+// @desc    Upload meal photo
+// @route   PUT /api/meals/:id/photo
+// @access  Private/Provider
+exports.uploadMealPhoto = asyncHandler(async (req, res, next) => {
+  // Check if a file was uploaded
+  if (!req.body.photo) {
+    return next(new ErrorResponse("Please upload a file", 400));
+  }
+
+  const meal = await Meal.findById(req.params.id);
+  if (!meal) {
+    return next(
+      new ErrorResponse(`Meal not found with id of ${req.params.id}`, 404)
+    );
+  }
+
+  // Check if user owns the meal
+  if (meal.user.toString() !== req.user.id && req.user.role !== "admin") {
+    return next(
+      new ErrorResponse(
+        `User ${req.user.id} is not authorized to update this meal`,
+        401
+      )
+    );
+  }
+
+  const updatedMeal = await Meal.findByIdAndUpdate(
+    req.params.id,
+    { photo: req.body.photo },
+    {
+      new: true,
+      runValidators: true,
+    }
+  );
+
+  res.status(200).json({
+    success: true,
+    data: updatedMeal,
+  });
+});

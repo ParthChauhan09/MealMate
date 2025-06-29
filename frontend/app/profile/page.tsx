@@ -333,30 +333,7 @@ export default function ProfilePage() {
             </CardContent>
           </Card>
 
-          {/* Account Stats */}
-          <Card className="mt-8">
-            <CardHeader>
-              <CardTitle>Account Statistics</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className="grid grid-cols-2 gap-4">
-                <div className="text-center p-4 bg-gray-50 rounded-lg">
-                  <p className="text-2xl font-bold text-gray-900">
-                    {user.role === "customer" ? "0" : "0"}
-                  </p>
-                  <p className="text-sm text-gray-600">
-                    {user.role === "customer" ? "Orders Placed" : "Meals Created"}
-                  </p>
-                </div>
-                <div className="text-center p-4 bg-gray-50 rounded-lg">
-                  <p className="text-2xl font-bold text-gray-900">0</p>
-                  <p className="text-sm text-gray-600">
-                    {user.role === "customer" ? "Reviews Written" : "Total Orders"}
-                  </p>
-                </div>
-              </div>
-            </CardContent>
-          </Card>
+
         </motion.div>
       </div>
     </div>

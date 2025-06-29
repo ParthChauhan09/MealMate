@@ -25,6 +25,7 @@ interface Meal {
   category: string
   availability: boolean
   user: string
+  photo?: string
   provider: {
     _id: string
     name: string
@@ -192,8 +193,16 @@ export default function MealDetailsPage() {
               {/* Meal Details */}
               <Card className="mb-8">
                 <div className="relative">
-                  <div className="w-full h-64 bg-gradient-to-br from-orange-100 to-orange-200 flex items-center justify-center rounded-t-lg">
-                    <div className="text-8xl">🍽️</div>
+                  <div className="w-full h-64 bg-gradient-to-br from-orange-100 to-orange-200 flex items-center justify-center rounded-t-lg overflow-hidden">
+                    {meal.photo ? (
+                      <img
+                        src={meal.photo}
+                        alt={meal.name}
+                        className="w-full h-full object-cover"
+                      />
+                    ) : (
+                      <div className="text-8xl">🍽️</div>
+                    )}
                   </div>
                   <Badge className="absolute top-4 left-4 bg-orange-500 text-white capitalize">
                     {meal.category}

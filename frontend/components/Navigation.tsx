@@ -15,7 +15,7 @@ import {
 } from "@/components/ui/dropdown-menu"
 import { useAuth } from "@/contexts/AuthContext"
 import { useCart } from "@/contexts/CartContext"
-import { ChefHat, User, ShoppingCart, Settings, LogOut, Menu, X, Home, Search, Heart, Package, Utensils } from "lucide-react"
+import { ChefHat, User, ShoppingCart, Settings, LogOut, Menu, X, Home, Search, Heart, Package, Utensils, Shield, Users } from "lucide-react"
 
 export default function Navigation() {
   const { user, logout } = useAuth()
@@ -29,12 +29,20 @@ export default function Navigation() {
     ]
 
     if (user) {
+      // Admin navigation
+      if (user.role === "admin") {
+        baseItems.push({ href: "/admin", label: "Admin Panel", icon: Shield })
+      }
+
       // Only show Browse Meals for customers and non-logged in users
       if (user.role === "customer") {
         baseItems.push({ href: "/meals", label: "Browse Meals", icon: Search })
       }
 
-      baseItems.push({ href: "/orders", label: "Orders", icon: Package })
+      // Orders for customers and providers, but not admins
+      if (user.role !== "admin") {
+        baseItems.push({ href: "/orders", label: "Orders", icon: Package })
+      }
 
       if (user.role === "provider") {
         baseItems.push({ href: "/chef/meals", label: "My Meals", icon: Utensils })
@@ -150,6 +158,14 @@ export default function Navigation() {
                         {getDashboardLabel()}
                       </Link>
                     </DropdownMenuItem>
+                    {user.role === "admin" && (
+                      <DropdownMenuItem asChild>
+                        <Link href="/admin">
+                          <Users className="mr-2 h-4 w-4" />
+                          User Management
+                        </Link>
+                      </DropdownMenuItem>
+                    )}
                     <DropdownMenuItem asChild>
                       <Link href="/profile">
                         <Settings className="mr-2 h-4 w-4" />
@@ -221,6 +237,16 @@ export default function Navigation() {
                         <User className="w-4 h-4" />
                         <span>{getDashboardLabel()}</span>
                       </Link>
+                      {user.role === "admin" && (
+                        <Link
+                          href="/admin"
+                          className="flex items-center space-x-2 px-4 py-2 text-gray-700 hover:text-orange-600 hover:bg-orange-50 rounded-md"
+                          onClick={() => setMobileMenuOpen(false)}
+                        >
+                          <Users className="w-4 h-4" />
+                          <span>User Management</span>
+                        </Link>
+                      )}
                       <Link
                         href="/profile"
                         className="flex items-center space-x-2 px-4 py-2 text-gray-700 hover:text-orange-600 hover:bg-orange-50 rounded-md"

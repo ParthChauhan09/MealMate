@@ -7,11 +7,16 @@ const { roles } = require("../config/config");
 
 // Admin only routes
 router.get("/", protect, authorize(roles.ADMIN), userController.getAllUsers);
+router.delete(
+  "/:id",
+  protect,
+  authorize(roles.ADMIN),
+  userController.deleteUser
+);
 
 // Protected routes
 router.get("/:id", protect, userController.getUserById);
 router.put("/:id", protect, userController.updateUser);
-router.delete("/:id", protect, userController.deleteUser);
 
 // Profile photo upload route
 router.put(

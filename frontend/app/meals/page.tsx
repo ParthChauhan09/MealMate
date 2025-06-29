@@ -20,6 +20,7 @@ interface Meal {
   category: string
   availability: boolean
   user: string
+  photo?: string
   provider: {
     _id: string
     name: string
@@ -254,8 +255,16 @@ export default function MealsPage() {
                 >
                   <Card className="overflow-hidden shadow-lg hover:shadow-xl transition-all duration-300 border-0 bg-white h-full flex flex-col">
                     <div className="relative">
-                      <div className="w-full h-48 bg-gradient-to-br from-orange-100 to-orange-200 flex items-center justify-center">
-                        <div className="text-6xl">🍽️</div>
+                      <div className="w-full h-48 bg-gradient-to-br from-orange-100 to-orange-200 flex items-center justify-center overflow-hidden">
+                        {meal.photo ? (
+                          <img
+                            src={meal.photo}
+                            alt={meal.name}
+                            className="w-full h-full object-cover"
+                          />
+                        ) : (
+                          <div className="text-6xl">🍽️</div>
+                        )}
                       </div>
                       <motion.button
                         className="absolute top-4 right-4 p-2 rounded-full bg-white/90 backdrop-blur-sm shadow-lg"
