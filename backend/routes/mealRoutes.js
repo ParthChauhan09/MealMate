@@ -1,11 +1,34 @@
-const express = require('express');
+const express = require("express");
 const router = express.Router();
-const mealController = require('../controllers/mealController');
+const mealController = require("../controllers/mealController");
+const { protect, authorize } = require("../middleware/auth");
+const { roles } = require("../config/config");
+const reviewRouter = require("./reviewRoutes");
 
-router.get('/', mealController.getAllMeals);
-router.get('/:id', mealController.getMealById);
-router.post('/', mealController.createMeal);        // Provider only
-router.put('/:id', mealController.updateMeal);      // Provider only
-router.delete('/:id', mealController.deleteMeal);   // Provider only
+// Re-route into review router
+router.use("/:mealId/reviews", reviewRouter);
+
+// Public routes
+router.get("/", mealController.getAllMeals);
+router.get("/:id", mealController.getMealById);
+
+// Provider only routes
+router.post(
+  "/",
+  // Do NOT use upload.single('mealPhoto') here, it's in the controller
+  mealController.createMeal
+);
+router.put(
+  "/:id",
+  protect,
+  authorize(roles.PROVIDER),
+  mealController.updateMeal
+);
+router.delete(
+  "/:id",
+  protect,
+  authorize(roles.PROVIDER),
+  mealController.deleteMeal
+);
 
 module.exports = router;

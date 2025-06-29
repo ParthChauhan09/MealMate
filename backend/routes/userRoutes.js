@@ -1,10 +1,24 @@
-const express = require('express');
+const express = require("express");
 const router = express.Router();
-const userController = require('../controllers/userController');
+const userController = require("../controllers/userController");
+const { protect, authorize } = require("../middleware/auth");
+const { uploadUserPhoto } = require("../middleware/fileUpload");
+const { roles } = require("../config/config");
 
-router.get('/', userController.getAllUsers); // Admin only
-router.get('/:id', userController.getUserById);
-router.put('/:id', userController.updateUser);
-router.delete('/:id', userController.deleteUser);
+// Admin only routes
+router.get("/", protect, authorize(roles.ADMIN), userController.getAllUsers);
+
+// Protected routes
+router.get("/:id", protect, userController.getUserById);
+router.put("/:id", protect, userController.updateUser);
+router.delete("/:id", protect, userController.deleteUser);
+
+// Profile photo upload route
+router.put(
+  "/:id/profile-photo",
+  protect,
+  uploadUserPhoto,
+  userController.updateProfilePhoto
+);
 
 module.exports = router;

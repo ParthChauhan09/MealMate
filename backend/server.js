@@ -1,8 +1,10 @@
-const express = require('express');
-const dotenv = require('dotenv');
-const cors = require('cors');
-const connectDB = require('./config/db');
-const errorHandler = require('./middleware/errorHandler');
+const express = require("express");
+const dotenv = require("dotenv");
+const cors = require("cors");
+const connectDB = require("./config/db");
+const errorHandler = require("./middleware/errorHandler");
+const multer = require('multer');
+const upload = multer();
 
 // Load environment variables
 dotenv.config();
@@ -14,21 +16,30 @@ connectDB();
 const app = express();
 
 // Middleware
-app.use(express.json());
 app.use(cors());
+app.use(express.json());
+app.use(express.urlencoded({ extended: true }));
+
+// Set static folder for serving files locally (if needed)
+app.use(express.static("public"));
 
 // Define routes
-app.use('/api/auth', require('./routes/authRoutes'));
-app.use('/api/users', require('./routes/userRoutes'));
-app.use('/api/meals', require('./routes/mealRoutes'));
-app.use('/api/orders', require('./routes/orderRoutes'));
-app.use('/api/reviews', require('./routes/reviewRoutes'));
+app.use("/api/auth", express.json(), require("./routes/authRoutes"));
+app.use("/api/users", express.json(), require("./routes/userRoutes"));
+app.use("/api/meals", require("./routes/mealRoutes"));
+app.use("/api/orders", require("./routes/orderRoutes"));
+app.use("/api/reviews", require("./routes/reviewRoutes"));
+
+// Direct test route for file upload debugging
+app.post('/test-direct', upload.single('testFile'), (req, res) => {
+  res.json({ file: req.file, body: req.body });
+});
 
 // Home route
-app.get('/', (req, res) => {
+app.get("/", (req, res) => {
   res.json({
-    message: 'Welcome to MealMate API',
-    version: '1.0.0'
+    message: "Welcome to MealMate API",
+    version: "1.0.0",
   });
 });
 
@@ -44,7 +55,7 @@ const server = app.listen(PORT, () => {
 });
 
 // Handle unhandled promise rejections
-process.on('unhandledRejection', (err, promise) => {
+process.on("unhandledRejection", (err, promise) => {
   console.log(`Error: ${err.message}`);
   // Close server & exit process
   server.close(() => process.exit(1));
