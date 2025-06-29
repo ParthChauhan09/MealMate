@@ -44,6 +44,7 @@ interface Meal {
   availability: boolean
   user: string
   provider: string
+  photo?: string
 }
 
 const categories = ["breakfast", "lunch", "dinner", "snack", "beverage"]
@@ -65,6 +66,7 @@ export default function ChefMealsPage() {
     category: "",
     availability: true
   })
+  const [selectedFile, setSelectedFile] = useState<File | null>(null)
 
   const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000/api"
 
@@ -107,6 +109,7 @@ export default function ChefMealsPage() {
       category: "",
       availability: true
     })
+    setSelectedFile(null)
     setEditingMeal(null)
   }
 
@@ -132,23 +135,30 @@ export default function ChefMealsPage() {
     setSubmitting(true)
 
     try {
-      const url = editingMeal 
+      const url = editingMeal
         ? `${API_BASE_URL}/meals/${editingMeal._id}`
         : `${API_BASE_URL}/meals`
-      
+
       const method = editingMeal ? "PUT" : "POST"
+
+      // Create FormData for file upload
+      const formDataToSend = new FormData()
+      formDataToSend.append('name', formData.name)
+      formDataToSend.append('description', formData.description)
+      formDataToSend.append('price', formData.price)
+      formDataToSend.append('category', formData.category)
+      formDataToSend.append('availability', formData.availability.toString())
+
+      if (selectedFile) {
+        formDataToSend.append('mealPhoto', selectedFile)
+      }
 
       const response = await fetch(url, {
         method,
         headers: {
-          "Content-Type": "application/json",
           Authorization: `Bearer ${token}`,
         },
-        body: JSON.stringify({
-          ...formData,
-          price: parseFloat(formData.price)
-          // Backend will automatically set user and provider from authenticated user
-        }),
+        body: formDataToSend,
       })
 
       if (response.ok) {
@@ -343,6 +353,22 @@ export default function ChefMealsPage() {
                     </Select>
                   </div>
 
+                  <div>
+                    <Label htmlFor="mealPhoto">Meal Photo</Label>
+                    <Input
+                      id="mealPhoto"
+                      type="file"
+                      accept="image/*"
+                      onChange={(e) => setSelectedFile(e.target.files?.[0] || null)}
+                      className="cursor-pointer"
+                    />
+                    {selectedFile && (
+                      <p className="text-sm text-gray-600 mt-1">
+                        Selected: {selectedFile.name}
+                      </p>
+                    )}
+                  </div>
+
                   <div className="flex items-center space-x-2">
                     <input
                       type="checkbox"
@@ -443,8 +469,16 @@ export default function ChefMealsPage() {
                 >
                   <Card className="overflow-hidden h-full flex flex-col">
                     <div className="relative">
-                      <div className="w-full h-48 bg-gradient-to-br from-orange-100 to-orange-200 flex items-center justify-center">
-                        <div className="text-6xl">🍽️</div>
+                      <div className="w-full h-48 bg-gradient-to-br from-orange-100 to-orange-200 flex items-center justify-center overflow-hidden">
+                        {meal.photo ? (
+                          <img
+                            src={meal.photo}
+                            alt={meal.name}
+                            className="w-full h-full object-cover"
+                          />
+                        ) : (
+                          <div className="text-6xl">🍽️</div>
+                        )}
                       </div>
                       <Badge
                         className={`absolute top-4 right-4 ${

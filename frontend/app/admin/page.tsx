@@ -5,19 +5,31 @@ import { motion } from "framer-motion"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog"
 import { useAuth } from "@/contexts/AuthContext"
 import { useToast } from "@/hooks/use-toast"
-import { 
-  Users, 
-  ChefHat, 
-  Package, 
+import {
+  Users,
+  ChefHat,
+  Package,
   DollarSign,
   TrendingUp,
   Eye,
   Trash2,
   Shield,
   UserCheck,
-  UserX
+  UserX,
+  Filter
 } from "lucide-react"
 
 interface User {
@@ -52,6 +64,9 @@ export default function AdminDashboard() {
     totalRevenue: 0
   })
   const [loading, setLoading] = useState(true)
+  const [activeTab, setActiveTab] = useState("all")
+  const [deleteDialogOpen, setDeleteDialogOpen] = useState(false)
+  const [userToDelete, setUserToDelete] = useState<User | null>(null)
 
   const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000/api"
 
@@ -127,13 +142,16 @@ export default function AdminDashboard() {
     }
   }
 
-  const deleteUser = async (userId: string) => {
-    if (!confirm("Are you sure you want to delete this user?")) {
-      return
-    }
+  const handleDeleteClick = (userData: User) => {
+    setUserToDelete(userData)
+    setDeleteDialogOpen(true)
+  }
+
+  const confirmDeleteUser = async () => {
+    if (!userToDelete) return
 
     try {
-      const response = await fetch(`${API_BASE_URL}/users/${userId}`, {
+      const response = await fetch(`${API_BASE_URL}/users/${userToDelete._id}`, {
         method: "DELETE",
         headers: {
           Authorization: `Bearer ${token}`,
@@ -143,19 +161,23 @@ export default function AdminDashboard() {
       if (response.ok) {
         toast({
           title: "User deleted",
-          description: "User has been deleted successfully.",
+          description: `${userToDelete.name} has been deleted successfully.`,
         })
         fetchUsers()
         fetchStats()
       } else {
-        throw new Error("Failed to delete user")
+        const errorData = await response.json()
+        throw new Error(errorData.message || "Failed to delete user")
       }
-    } catch (error) {
+    } catch (error: any) {
       toast({
         title: "Delete failed",
-        description: "Failed to delete user.",
+        description: error.message || "Failed to delete user.",
         variant: "destructive",
       })
+    } finally {
+      setDeleteDialogOpen(false)
+      setUserToDelete(null)
     }
   }
 
@@ -169,6 +191,19 @@ export default function AdminDashboard() {
         return "bg-blue-500"
       default:
         return "bg-gray-500"
+    }
+  }
+
+  const getFilteredUsers = () => {
+    switch (activeTab) {
+      case "customers":
+        return users.filter(user => user.role === "customer")
+      case "providers":
+        return users.filter(user => user.role === "provider")
+      case "admins":
+        return users.filter(user => user.role === "admin")
+      default:
+        return users
     }
   }
 
@@ -301,11 +336,24 @@ export default function AdminDashboard() {
               </CardTitle>
             </CardHeader>
             <CardContent>
-              {users.length === 0 ? (
+              <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
+                <TabsList className="grid w-full grid-cols-4">
+                  <TabsTrigger value="all">All Users ({users.length})</TabsTrigger>
+                  <TabsTrigger value="customers">Customers ({users.filter(u => u.role === "customer").length})</TabsTrigger>
+                  <TabsTrigger value="providers">Providers ({users.filter(u => u.role === "provider").length})</TabsTrigger>
+                  <TabsTrigger value="admins">Admins ({users.filter(u => u.role === "admin").length})</TabsTrigger>
+                </TabsList>
+
+                <TabsContent value={activeTab} className="mt-6">
+              {getFilteredUsers().length === 0 ? (
                 <div className="text-center py-8">
                   <Users className="w-16 h-16 text-gray-300 mx-auto mb-4" />
                   <h3 className="text-lg font-medium text-gray-900 mb-2">No users found</h3>
-                  <p className="text-gray-600">No users are registered in the system.</p>
+                  <p className="text-gray-600">
+                    {activeTab === "all"
+                      ? "No users are registered in the system."
+                      : `No ${activeTab} found in the system.`}
+                  </p>
                 </div>
               ) : (
                 <div className="overflow-x-auto">
@@ -320,7 +368,7 @@ export default function AdminDashboard() {
                       </tr>
                     </thead>
                     <tbody>
-                      {users.map((userData, index) => (
+                      {getFilteredUsers().map((userData, index) => (
                         <motion.tr
                           key={userData._id}
                           initial={{ opacity: 0, y: 20 }}
@@ -354,11 +402,11 @@ export default function AdminDashboard() {
                               <Button variant="outline" size="sm">
                                 <Eye className="w-4 h-4" />
                               </Button>
-                              {userData._id !== user._id && (
+                              {userData._id !== user._id && userData.role !== "admin" && (
                                 <Button
                                   variant="outline"
                                   size="sm"
-                                  onClick={() => deleteUser(userData._id)}
+                                  onClick={() => handleDeleteClick(userData)}
                                   className="text-red-600 hover:text-red-700"
                                 >
                                   <Trash2 className="w-4 h-4" />
@@ -372,10 +420,34 @@ export default function AdminDashboard() {
                   </table>
                 </div>
               )}
+                </TabsContent>
+              </Tabs>
             </CardContent>
           </Card>
         </motion.div>
       </div>
+
+      {/* Delete Confirmation Dialog */}
+      <AlertDialog open={deleteDialogOpen} onOpenChange={setDeleteDialogOpen}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Delete User Account</AlertDialogTitle>
+            <AlertDialogDescription>
+              Are you sure you want to delete <strong>{userToDelete?.name}</strong>'s account?
+              This action cannot be undone and will permanently remove all their data.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Cancel</AlertDialogCancel>
+            <AlertDialogAction
+              onClick={confirmDeleteUser}
+              className="bg-red-600 hover:bg-red-700"
+            >
+              Delete User
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   )
 }
