@@ -117,6 +117,7 @@ export default function MealMatePage() {
       name: meal.name,
       price: meal.price,
       category: meal.category,
+      photo: meal.photo,
       provider: meal.provider,
     })
   }

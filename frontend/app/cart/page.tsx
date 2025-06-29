@@ -180,8 +180,16 @@ export default function CartPage() {
                         transition={{ duration: 0.3 }}
                         className="flex items-center gap-4 p-4 border-b border-gray-200 last:border-b-0"
                       >
-                        <div className="w-16 h-16 bg-gradient-to-br from-orange-100 to-orange-200 rounded-lg flex items-center justify-center">
-                          <div className="text-2xl">🍽️</div>
+                        <div className="w-16 h-16 bg-gradient-to-br from-orange-100 to-orange-200 rounded-lg flex items-center justify-center overflow-hidden">
+                          {item.photo ? (
+                            <img
+                              src={item.photo}
+                              alt={item.name}
+                              className="w-full h-full object-cover"
+                            />
+                          ) : (
+                            <div className="text-2xl">🍽️</div>
+                          )}
                         </div>
                         
                         <div className="flex-1">
